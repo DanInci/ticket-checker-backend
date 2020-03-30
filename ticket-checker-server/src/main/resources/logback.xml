@@ -1,0 +1,27 @@
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd_HH:mm:ss.SSS} [%thread] %highlight(%-5level) %cyan(%logger) - %mdc — %msg %n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <logger name="org.flywaydb.core.internal.command.DbMigrate" level="INFO"/>
+    <logger name="org.flywaydb" level="WARN"/>
+
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+
+    <logger name="io.netty" level="INFO"/>
+
+    <logger name="org.http4s.server.blaze.BlazeServerBuilder" level="INFO"/>
+    <logger name="org.http4s.blaze.channel.nio1.SelectorLoop" level="INFO"/>
+    <logger name="org.http4s" level="WARN"/>
+
+    <logger name="software.amazon.awssdk" level="WARN"/>
+
+</configuration>
