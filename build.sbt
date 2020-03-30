@@ -27,8 +27,10 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
   .settings(commonSettings)
   .settings(serverPackSettings("ticket-checker-server" -> "com.ticket.checker.TicketCheckerApp"))
   .dependsOn(
+    `organizer-organization`,
     `organizer-user`,
     `organizer-ticket`,
+    `algebra-organization`,
     `algebra-user`,
     `algebra-ticket`,
     `util-core`,
@@ -37,8 +39,10 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `util-time`,
   )
   .aggregate(
+    `organizer-organization`,
     `organizer-user`,
     `organizer-ticket`,
+    `algebra-organization`,
     `algebra-user`,
     `algebra-ticket`,
     `util-core`,
@@ -81,6 +85,19 @@ lazy val `organizer-ticket` = organizerModule("ticket")
     `util-http`,
   )
 
+lazy val `organizer-organization` = organizerModule("organization")
+  .settings(commonSettings)
+  .dependsOn(
+    `algebra-organization`,
+    `util-core`,
+    `util-http`,
+  )
+  .aggregate(
+    `algebra-organization`,
+    `util-core`,
+    `util-http`,
+  )
+
 //********************************************************************************************
 //********************************************************************************************
 //***************************************** algebras *****************************************
@@ -103,6 +120,21 @@ lazy val `algebra-user` = algebraModule("user")
   )
 
 lazy val `algebra-ticket` = algebraModule("ticket")
+  .settings(commonSettings)
+  .dependsOn(
+    `algebra-user`,
+    `util-core`,
+    `util-db`,
+    `util-time`,
+  )
+  .aggregate(
+    `algebra-user`,
+    `util-core`,
+    `util-db`,
+    `util-time`,
+  )
+
+lazy val `algebra-organization` = algebraModule("organization")
   .settings(commonSettings)
   .dependsOn(
     `algebra-user`,
