@@ -106,6 +106,29 @@ lazy val `organizer-organization` = organizerModule("organization")
 
 def algebraModule(name: String): Project = Project(s"algebra-$name", file(s"algebras/$name"))
 
+lazy val `algebra-auth` = algebraModule("auth")
+  .settings(commonSettings)
+  .dependsOn(
+    `util-core`,
+  )
+  .aggregate(
+    `util-core`,
+  )
+  .settings(
+    libraryDependencies ++= Libraries.tsecJWT
+  )
+
+lazy val `algebra-auth-http` = algebraModule("auth-http")
+  .settings(commonSettings)
+  .dependsOn(
+    `util-http`,
+    `algebra-auth`
+  )
+  .aggregate(
+    `util-http`,
+    `algebra-auth`
+  )
+
 lazy val `algebra-user` = algebraModule("user")
   .settings(commonSettings)
   .dependsOn(

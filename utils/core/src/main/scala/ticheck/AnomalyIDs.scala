@@ -15,4 +15,11 @@ object AnomalyIDs {
   case object InvalidJSONBodyID    extends AnomalyID { override val name: String = "IV_JSONB" }
   case object InvalidHTTPRequestID extends AnomalyID { override val name: String = "IV_MSG" }
 
+  //--------------------------- AUTH  ---------------------------
+  case object JWTVerificationAnomalyID     extends AnomalyID { override val name: String = "IVJWT" }
+  case object JWTAuthCtxMalformedAnomalyID extends AnomalyID { override val name: String = "IVJWTMAL" }
+
+  //--------------------------- AUTH HTTP ---------------------------
+  case object MissingXAuthTokenHeaderID extends AnomalyID { override val name: String = "UA_MISSING_XAUTH_HEADER" }
+
 }
