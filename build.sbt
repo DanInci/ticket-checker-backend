@@ -33,6 +33,9 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `algebra-organization`,
     `algebra-user`,
     `algebra-ticket`,
+    `dao-organization`,
+    `dao-user`,
+    `dao-ticket`,
     `util-core`,
     `util-db`,
     `util-http`,
@@ -45,6 +48,9 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `algebra-organization`,
     `algebra-user`,
     `algebra-ticket`,
+    `dao-organization`,
+    `dao-user`,
+    `dao-ticket`,
     `util-core`,
     `util-db`,
     `util-http`,
@@ -238,7 +244,8 @@ lazy val `util-db` = utilModule("db")
   .settings(
     libraryDependencies ++= Libraries.doobie ++ Seq(
       Libraries.pureharmDBCore,
-      Libraries.pureharmDBCoreFlyway
+      Libraries.pureharmDBCoreFlyway,
+      Libraries.prepy
     ),
   )
   .dependsOn(

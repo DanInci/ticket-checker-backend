@@ -21,6 +21,7 @@ object Libraries {
   private lazy val postgresqlVersion:  String = "42.3.0"    //java — https://github.com/pgjdbc/pgjdbc/releases
   private lazy val hikariCPVersion:    String = "3.4.2"     //java — https://github.com/brettwooldridge/HikariCP/releases
   private lazy val tsecVersion:        String = "0.2.0-M1"  //https://github.com/jmcardon/tsec/releases
+  private lazy val prepyVersion:       String = "0.0.7"     //https://github.com/alexandrustana/prepy/releases
 
   //=============================================================================
   //================================= TYPELEVEL =================================
@@ -108,9 +109,10 @@ object Libraries {
 
   lazy val doobie: Seq[ModuleID] = Seq(doobieCore, doobieHikari, doobiePostgres, doobieTK)
 
-  lazy val postgresql: ModuleID = "org.postgresql" % "postgresql"  % postgresqlVersion withSources ()
-  lazy val hikariCP:   ModuleID = "com.zaxxer"     % "HikariCP"    % hikariCPVersion   withSources ()
-  lazy val flyway:     ModuleID = "org.flywaydb"   % "flyway-core" % flywayVersion     withSources ()
+  lazy val postgresql: ModuleID = "org.postgresql"            % "postgresql"  % postgresqlVersion withSources ()
+  lazy val hikariCP:   ModuleID = "com.zaxxer"                % "HikariCP"    % hikariCPVersion   withSources ()
+  lazy val flyway:     ModuleID = "org.flywaydb"              % "flyway-core" % flywayVersion     withSources ()
+  lazy val prepy:      ModuleID = "com.github.alexandrustana" %% "prepy"      % prepyVersion      withSources ()
 
   //============================================================================================
 
