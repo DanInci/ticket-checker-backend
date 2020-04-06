@@ -12,7 +12,7 @@ import ticheck.time.ModuleTimeAlgebra
   */
 trait ModuleTicketDAO[F[_]] { this: ModuleTimeAlgebra[F] =>
 
-  protected def F: Sync[F]
+  implicit protected def S: Sync[F]
 
   def ticketSQL: F[TicketSQL[ConnectionIO]] = _ticketSql
 

@@ -12,7 +12,7 @@ import ticheck.time.ModuleTimeAlgebra
   */
 trait ModuleUserDAO[F[_]] { this: ModuleTimeAlgebra[F] =>
 
-  protected def F: Sync[F]
+  implicit protected def S: Sync[F]
 
   def userSQL: F[UserSQL[ConnectionIO]] = _userSql
 

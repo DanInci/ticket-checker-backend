@@ -12,7 +12,7 @@ trait ModuleTimeAlgebra[F[_]] {
 
   implicit protected def S: Sync[F]
 
-  implicit protected def timeConfig: TimeConfig
+  protected def timeConfig: TimeConfig
 
   protected def timeAlgebra: F[TimeAlgebra] = _timeAlgebra
 

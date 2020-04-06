@@ -1,8 +1,8 @@
-package ticheck.algebra.user
+package ticheck.algebra.organization
 
+import ticheck.dao.organization.ModuleOrganizationDAO
 import ticheck.db.Transactor
-import ticheck.dao.user.ModuleUserDAO
-import ticheck.effect._
+import ticheck.effect.Async
 import ticheck.time.ModuleTimeAlgebra
 
 /**
@@ -11,7 +11,7 @@ import ticheck.time.ModuleTimeAlgebra
   * @since 4/6/2020
   *
   */
-trait ModuleUserAlgebra[F[_]] { this: ModuleUserDAO[F] with ModuleTimeAlgebra[F] =>
+trait ModuleOrganizationAlgebra[F[_]] { this: ModuleOrganizationDAO[F] with ModuleTimeAlgebra[F] =>
 
   implicit protected def F: Async[F]
 
