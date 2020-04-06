@@ -129,48 +129,86 @@ lazy val `algebra-auth-http` = algebraModule("auth-http")
     `algebra-auth`
   )
 
-lazy val `algebra-user` = algebraModule("user")
-  .settings(commonSettings)
-  .dependsOn(
-    `util-core`,
-    `util-db`,
-    `util-time`,
-  )
-  .aggregate(
-    `util-core`,
-    `util-db`,
-    `util-time`,
-  )
-
 lazy val `algebra-ticket` = algebraModule("ticket")
   .settings(commonSettings)
   .dependsOn(
-    `algebra-user`,
+    `dao-ticket`,
     `util-core`,
-    `util-db`,
     `util-time`,
   )
   .aggregate(
-    `algebra-user`,
+    `dao-ticket`,
     `util-core`,
-    `util-db`,
+    `util-time`,
+  )
+
+lazy val `algebra-user` = algebraModule("user")
+  .settings(commonSettings)
+  .dependsOn(
+    `dao-user`,
+    `util-core`,
+    `util-time`,
+  )
+  .aggregate(
+    `dao-user`,
+    `util-core`,
     `util-time`,
   )
 
 lazy val `algebra-organization` = algebraModule("organization")
   .settings(commonSettings)
   .dependsOn(
-    `algebra-user`,
+    `dao-organization`,
     `util-core`,
-    `util-db`,
     `util-time`,
   )
   .aggregate(
-    `algebra-user`,
+    `dao-organization`,
     `util-core`,
-    `util-db`,
     `util-time`,
   )
+
+//********************************************************************************************
+//********************************************************************************************
+//******************************************* daos ******************************************
+//********************************************************************************************
+//********************************************************************************************
+
+def daoModule(name: String): Project = Project(s"dao-$name", file(s"daos/$name"))
+
+lazy val `dao-ticket` = daoModule("ticket")
+  .settings(commonSettings)
+  .dependsOn(
+    `util-core`,
+    `util-db`,
+  )
+  .aggregate(
+    `util-core`,
+    `util-db`,
+  )
+
+lazy val `dao-user` = daoModule("user")
+  .settings(commonSettings)
+  .dependsOn(
+    `util-core`,
+    `util-db`,
+  )
+  .aggregate(
+    `util-core`,
+    `util-db`,
+  )
+
+lazy val `dao-organization` = daoModule("organization")
+  .settings(commonSettings)
+  .dependsOn(
+    `util-core`,
+    `util-db`,
+  )
+  .aggregate(
+    `util-core`,
+    `util-db`,
+  )
+
 
 //********************************************************************************************
 //********************************************************************************************
@@ -201,6 +239,7 @@ lazy val `util-db` = utilModule("db")
     libraryDependencies ++= Libraries.doobie ++ Seq(
       Libraries.pureharmDBCore,
       Libraries.pureharmDBCoreFlyway,
+      Libraries.prepy,
     ),
   )
   .dependsOn(
