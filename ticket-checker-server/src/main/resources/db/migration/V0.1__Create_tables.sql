@@ -31,12 +31,11 @@ CREATE TABLE "ticket" (
 );
 
 ALTER TABLE "organization" ADD PRIMARY KEY ("id");
-ALTER TABLE "organization" ADD CONSTRAINT organization_owner_id_fk FOREIGN KEY ("owner_id") REFERENCES "user" ("id") ON DELETE SET NULL;
-
 ALTER TABLE "user" ADD PRIMARY KEY ("id");
-ALTER TABLE "user" ADD CONSTRAINT user_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
-
 ALTER TABLE "ticket" ADD PRIMARY KEY ("id", "organization_id");
+
+ALTER TABLE "organization" ADD CONSTRAINT organization_owner_id_fk FOREIGN KEY ("owner_id") REFERENCES "user" ("id") ON DELETE SET NULL;
+ALTER TABLE "user" ADD CONSTRAINT user_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_sold_by_id_fk FOREIGN KEY ("sold_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
-ALTER TABLE "ticket" ADD CONSTRAINT ticket_organization_id_fk FOREIGN KEY ("validated_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
+ALTER TABLE "ticket" ADD CONSTRAINT ticket_validated_by_id_fk FOREIGN KEY ("validated_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
