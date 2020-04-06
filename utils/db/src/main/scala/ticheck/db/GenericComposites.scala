@@ -1,5 +1,9 @@
 package ticheck.db
 
+import java.sql.Timestamp
+
+import doobie.util.meta.{LegacyInstantMetaInstance, LegacyLocalDateMetaInstance}
+
 import scala.reflect.runtime.universe.TypeTag
 import io.circe.Json
 import io.circe.parser.parse
@@ -15,7 +19,9 @@ import ticheck.effect._
   * @since 3/30/2020
   *
   */
-trait GenericComposites {
+trait GenericComposites extends LegacyLocalDateMetaInstance with LegacyInstantMetaInstance {
+
+  implicit val timestampMeta: Meta[Timestamp] = implicitly
 
   implicit def phantomLongMeta[Tag](implicit tt: TypeTag[Long @@ Tag]): Meta[Long @@ Tag] =
     Meta.LongMeta.timap(v => shapeless.tag[Tag](v))(identity)

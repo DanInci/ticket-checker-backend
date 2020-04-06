@@ -9,7 +9,7 @@ import ticheck.dao.ticket._
   * @since 4/6/2020
   *
   */
-final case class TicketTable(
+final case class TicketRecord(
   id:              TicketID,
   organizationId:  OrganizationID,
   soldTo:          Option[SoldTo],

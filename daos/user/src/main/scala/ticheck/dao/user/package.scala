@@ -2,9 +2,8 @@ package ticheck.dao
 
 import java.time.OffsetDateTime
 
-import busymachines.pureharm.phantom.PhantomType
+import ticheck.PhantomType
 import ticheck.PhantomFUUID
-import ticheck.dao.user.Email
 
 /**
   *

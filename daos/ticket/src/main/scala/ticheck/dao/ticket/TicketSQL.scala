@@ -1,8 +1,7 @@
 package ticheck.dao.ticket
 
-import busymachines.pureharm.db.DAOAlgebra
-import ticheck.TicketID
-import ticheck.dao.ticket.models.TicketTable
+import ticheck.db.DAOAlgebra
+import ticheck.dao.ticket.models.TicketRecord
 
 /**
   *
@@ -10,4 +9,4 @@ import ticheck.dao.ticket.models.TicketTable
   * @since 4/6/2020
   *
   */
-trait TicketSQL[H[_]] extends DAOAlgebra[H, TicketTable, TicketID]
+trait TicketSQL[H[_]] extends DAOAlgebra[H, TicketRecord, TicketPK]

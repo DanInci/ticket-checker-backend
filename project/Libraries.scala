@@ -20,7 +20,6 @@ object Libraries {
   private lazy val flywayVersion:      String = "6.2.4"     //java — https://github.com/flyway/flyway/releases
   private lazy val postgresqlVersion:  String = "42.3.0"    //java — https://github.com/pgjdbc/pgjdbc/releases
   private lazy val hikariCPVersion:    String = "3.4.2"     //java — https://github.com/brettwooldridge/HikariCP/releases
-  private lazy val prepyVersion:       String = "0.0.5"     // https://github.com/alexandrustana/prepy/releases
   private lazy val tsecVersion:        String = "0.2.0-M1"  //https://github.com/jmcardon/tsec/releases
 
   //=============================================================================
@@ -136,9 +135,6 @@ object Libraries {
   lazy val fuuid       = "io.chrisdavenport" %% "fuuid"        % fuuidVersion withSources ()
   lazy val fuuidCirce  = "io.chrisdavenport" %% "fuuid-circe"  % fuuidVersion withSources ()
   lazy val fuuidHttp4s = "io.chrisdavenport" %% "fuuid-http4s" % fuuidVersion withSources ()
-
-  //https://github.com/alexandrustana/prepy/releases
-  lazy val prepy = "com.github.alexandrustana" %% "prepy" % prepyVersion withSources ()
 
   //============================================================================================
   //=========================================== TSEC ===========================================

@@ -1,6 +1,6 @@
 package ticheck.dao.user
 
-import ticheck.dao.user.models.UserTable
+import ticheck.dao.user.models.UserRecord
 import ticheck.db._
 
 /**
@@ -9,4 +9,4 @@ import ticheck.db._
   * @since 4/6/2020
   *
   */
-trait UserSQL[H[_]] extends DAOAlgebra[H, UserTable, UserID]
+trait UserSQL[H[_]] extends DAOAlgebra[H, UserRecord, UserID]

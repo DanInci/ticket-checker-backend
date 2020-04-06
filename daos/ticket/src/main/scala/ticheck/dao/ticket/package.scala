@@ -2,8 +2,9 @@ package ticheck.dao
 
 import java.time.{LocalDate, OffsetDateTime}
 
-import busymachines.pureharm.phantom.PhantomType
+import ticheck.PhantomType
 import io.chrisdavenport.fuuid.FUUID
+import ticheck.{OrganizationID, TicketID}
 
 /**
   *
@@ -12,6 +13,8 @@ import io.chrisdavenport.fuuid.FUUID
   *
   */
 package object ticket {
+
+  type TicketPK = (TicketID, OrganizationID)
 
   object SoldTo extends PhantomType[String]
   type SoldTo = SoldTo.Type

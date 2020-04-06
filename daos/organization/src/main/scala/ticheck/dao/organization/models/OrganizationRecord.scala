@@ -9,8 +9,9 @@ import ticheck.dao.organization._
   * @since 4/6/2020
   *
   */
-final case class OrganizationTable(
+final case class OrganizationRecord(
   id:        OrganizationID,
+  ownerId:   Option[OwnerID],
   name:      OrganizationName,
   createdAt: CreatedAt,
 )

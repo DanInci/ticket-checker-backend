@@ -57,4 +57,9 @@ object UserRole {
     case Some(r) => Attempt.pure(r)
   }
 
+  def unsafe(s: String): UserRole = this.fromString(s) match {
+    case Left(e)      => throw e
+    case Right(value) => value
+  }
+
 }

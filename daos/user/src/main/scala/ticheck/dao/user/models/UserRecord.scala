@@ -9,7 +9,7 @@ import ticheck.dao.user._
   * @since 4/6/2020
   *
   */
-case class UserTable(
+case class UserRecord(
   id:             UserID,
   organizationId: OrganizationID,
   email:          Email,
@@ -17,5 +17,5 @@ case class UserTable(
   name:           Name,
   role:           UserRole,
   createdAt:      CreatedAt,
-  editedAt:       EditedAt,
+  editedAt:       Option[EditedAt],
 )

@@ -134,12 +134,10 @@ lazy val `algebra-ticket` = algebraModule("ticket")
   .dependsOn(
     `dao-ticket`,
     `util-core`,
-    `util-time`,
   )
   .aggregate(
     `dao-ticket`,
     `util-core`,
-    `util-time`,
   )
 
 lazy val `algebra-user` = algebraModule("user")
@@ -147,12 +145,10 @@ lazy val `algebra-user` = algebraModule("user")
   .dependsOn(
     `dao-user`,
     `util-core`,
-    `util-time`,
   )
   .aggregate(
     `dao-user`,
     `util-core`,
-    `util-time`,
   )
 
 lazy val `algebra-organization` = algebraModule("organization")
@@ -160,12 +156,10 @@ lazy val `algebra-organization` = algebraModule("organization")
   .dependsOn(
     `dao-organization`,
     `util-core`,
-    `util-time`,
   )
   .aggregate(
     `dao-organization`,
     `util-core`,
-    `util-time`,
   )
 
 //********************************************************************************************
@@ -181,10 +175,12 @@ lazy val `dao-ticket` = daoModule("ticket")
   .dependsOn(
     `util-core`,
     `util-db`,
+    `util-time`
   )
   .aggregate(
     `util-core`,
     `util-db`,
+    `util-time`
   )
 
 lazy val `dao-user` = daoModule("user")
@@ -192,10 +188,12 @@ lazy val `dao-user` = daoModule("user")
   .dependsOn(
     `util-core`,
     `util-db`,
+    `util-time`
   )
   .aggregate(
     `util-core`,
     `util-db`,
+    `util-time`
   )
 
 lazy val `dao-organization` = daoModule("organization")
@@ -203,10 +201,12 @@ lazy val `dao-organization` = daoModule("organization")
   .dependsOn(
     `util-core`,
     `util-db`,
+    `util-time`
   )
   .aggregate(
     `util-core`,
     `util-db`,
+    `util-time`
   )
 
 
@@ -238,8 +238,7 @@ lazy val `util-db` = utilModule("db")
   .settings(
     libraryDependencies ++= Libraries.doobie ++ Seq(
       Libraries.pureharmDBCore,
-      Libraries.pureharmDBCoreFlyway,
-      Libraries.prepy,
+      Libraries.pureharmDBCoreFlyway
     ),
   )
   .dependsOn(

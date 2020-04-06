@@ -12,10 +12,10 @@ import ticheck.json._
   */
 object Email extends SafePhantomType[Throwable, String] {
 
-  implicit val EmailCodec: Codec[Email.Type] = Codec.from[Email.Type](emailDecoder, emailEncoder)
-
   private val emailDecoder: Decoder[Email.Type] = Decoder[String].emap(es => Email(es).leftMap(_.getMessage))
   private val emailEncoder: Encoder[Email.Type] = Encoder[String].contramap(Email.despook)
+
+  implicit val EmailCodec: Codec[Email.Type] = Codec.from[Email.Type](emailDecoder, emailEncoder)
 
   override def check(value: String): Either[Throwable, String] = {
     val normalized = normalize(value)
