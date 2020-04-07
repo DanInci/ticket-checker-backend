@@ -17,32 +17,31 @@ final private[user] class UserSQLImpl private (override val timeAlgebra: TimeAlg
     extends UserSQL[ConnectionIO] with UserComposites {
 
   override def find(pk: UserID): ConnectionIO[Option[UserRecord]] =
-    sql"""SELECT "id", "organization_id", "email", "hashed_password", "name", "role", "created_at", "edited_at"
+    sql"""SELECT "id", "organization_id", "email", "hashed_password", "name", "created_at", "edited_at"
          | FROM "user"
          | WHERE "id"=$pk""".stripMargin.query[UserRecord].option
 
   override def retrieve(pk: UserID)(implicit show: Show[UserID]): ConnectionIO[UserRecord] =
-    sql"""SELECT "id", "organization_id", "email", "hashed_password", "name", "role", "created_at", "edited_at"
+    sql"""SELECT "id", "organization_id", "email", "hashed_password", "name", "created_at", "edited_at"
          | FROM "user"
          | WHERE "id"=$pk""".stripMargin.query[UserRecord].unique
 
   override def insert(e: UserRecord): ConnectionIO[UserID] =
-    sql"""INSERT INTO "user" ("id", "organization_id", "email", "hashed_password", "name", "role", "created_at", "edited_at")
-         | VALUES (${e.id}, ${e.organizationId}, ${e.email}, ${e.hashedPassword}, ${e.name}, ${e.role}, ${e.createdAt}, ${e.editedAt})""".stripMargin.update
+    sql"""INSERT INTO "user" ("id", "organization_id", "email", "hashed_password", "name", "created_at", "edited_at")
+         | VALUES (${e.id}, ${e.organizationId}, ${e.email}, ${e.hashedPassword}, ${e.name}, ${e.createdAt}, ${e.editedAt})""".stripMargin.update
       .withUniqueGeneratedKeys[UserID]("id")
 
   override def insertMany(es: Iterable[UserRecord]): ConnectionIO[Unit] = ???
 
   override def update(e: UserRecord): ConnectionIO[UserRecord] =
     sql"""UPDATE "user"
-         | SET "organization_id"=${e.organizationId}, "email"=${e.email}, "hashed_password"=${e.hashedPassword}, "name"=${e.name}, "role"=${e.role}, "created_at"=${e.createdAt}, "edited_at"=${e.editedAt}
+         | SET "organization_id"=${e.organizationId}, "email"=${e.email}, "hashed_password"=${e.hashedPassword}, "name"=${e.name}, "created_at"=${e.createdAt}, "edited_at"=${e.editedAt}
          | WHERE "id"=${e.id}""".stripMargin.update.withUniqueGeneratedKeys[UserRecord](
       "id",
       "organization_id",
       "email",
       "hashed_password",
       "name",
-      "role",
       "created_at",
       "edited_at",
     )

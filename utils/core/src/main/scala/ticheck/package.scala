@@ -13,6 +13,8 @@ package object ticheck
     extends pureharm.PureharmCoreTypeDefinitions with pureharm.anomaly.AnomalyParamtersImplicits
     with pureharm.anomaly.PureharmAnomalyTypeDefinitions {
 
+  type Email = Email.Type
+
   final type FUUID = fuuid.FUUID
   final val FUUID: fuuid.FUUID.type = fuuid.FUUID
 
@@ -21,6 +23,12 @@ package object ticheck
 
   object OrganizationID extends PhantomFUUID
   type OrganizationID = OrganizationID.Type
+
+  object OrganizationMembershipID extends PhantomFUUID
+  type OrganizationMembershipID = OrganizationMembershipID.Type
+
+  object OrganizationInviteID extends PhantomFUUID
+  type OrganizationInviteID = OrganizationInviteID.Type
 
   object TicketID extends PhantomType[String]
   type TicketID = TicketID.Type

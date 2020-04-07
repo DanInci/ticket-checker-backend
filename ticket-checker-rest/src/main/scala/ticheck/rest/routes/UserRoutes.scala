@@ -1,7 +1,7 @@
 package ticheck.rest.routes
 
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
-import org.http4s.{HttpRoutes, QueryParam}
+import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import ticheck.effect._
 import ticheck.http.{QueryParamInstances, RoutesHelpers}

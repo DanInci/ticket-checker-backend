@@ -5,6 +5,8 @@ import ticheck.algebra.organization.ModuleOrganizationAlgebra
 import ticheck.algebra.ticket.ModuleTicketAlgebra
 import ticheck.algebra.user.ModuleUserAlgebra
 import ticheck.dao.organization.ModuleOrganizationDAO
+import ticheck.dao.organization.invite.ModuleOrganizationInviteDAO
+import ticheck.dao.organization.membership.ModuleOrganizationMembershipDAO
 import ticheck.dao.ticket.ModuleTicketDAO
 import ticheck.dao.user.ModuleUserDAO
 import ticheck.effect._
@@ -20,8 +22,8 @@ import ticheck.time.{ModuleTimeAlgebra, TimeConfig}
   */
 trait ModuleTicketChecker[F[_]]
     extends ModuleTicketCheckerRest[F] with ModuleOrganizationAlgebra[F] with ModuleOrganizationDAO[F]
-    with ModuleTicketAlgebra[F] with ModuleTicketDAO[F] with ModuleUserAlgebra[F] with ModuleUserDAO[F]
-    with ModuleTimeAlgebra[F] {
+    with ModuleOrganizationMembershipDAO[F] with ModuleOrganizationInviteDAO[F] with ModuleTicketAlgebra[F]
+    with ModuleTicketDAO[F] with ModuleUserAlgebra[F] with ModuleUserDAO[F] with ModuleTimeAlgebra[F] {
 
   override protected def transactor: Transactor[F]
 

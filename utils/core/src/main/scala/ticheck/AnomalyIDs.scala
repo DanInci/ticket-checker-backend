@@ -9,6 +9,7 @@ package ticheck
 object AnomalyIDs {
 
   case object InconsistentStateAnomalyID extends AnomalyID { override val name: String = "ISCATA" }
+  case object InvalidEmailAddressID      extends AnomalyID { override val name: String = "IV_EMAIL" }
 
   //--------------------------- HTTP --------------------------------
   case object InvalidJSONBodyID    extends AnomalyID { override val name: String = "IV_JSONB" }
@@ -21,7 +22,10 @@ object AnomalyIDs {
   //--------------------------- AUTH HTTP ---------------------------
   case object MissingXAuthTokenHeaderID extends AnomalyID { override val name: String = "UA_MISSING_XAUTH_HEADER" }
 
-  //--------------------------- USER DAO -------------------------------
-  case object InvalidEmailAddressID extends AnomalyID { override val name: String = "IV_EMAIL" }
-  case object InvalidUserRoleID     extends AnomalyID { override val name: String = "IV_ROLE" }
+  //--------------------------- ORGANIZATION MEMBERSHIP DAO -------------------------------
+  case object InvalidOrganizationRoleID extends AnomalyID { override val name: String = "IV_ORG_ROLE" }
+
+  //--------------------------- ORGANIZATION INVITE DAO -------------------------------
+  case object InvalidInviteStatusID extends AnomalyID { override val name: String = "IV_INV_STATUS" }
+
 }

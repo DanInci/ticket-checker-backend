@@ -2,8 +2,8 @@ package ticheck.dao.user.impl
 
 import java.sql.Timestamp
 
-import ticheck.CreatedAt
-import ticheck.dao.user.{EditedAt, _}
+import ticheck.{CreatedAt, Email}
+import ticheck.dao.user._
 import ticheck.db._
 import ticheck.time.TimeAlgebra
 
@@ -19,9 +19,6 @@ private[impl] trait UserComposites extends CoreComposites {
 
   implicit val emailMeta: Meta[Email] =
     Meta[String].imap(Email.unsafe)(Email.despook)
-
-  implicit val userRoleMeta: Meta[UserRole] =
-    Meta[String].imap(UserRole.unsafe)(_.asString)
 
   implicit val createdAtMeta: Meta[CreatedAt] =
     Meta[Timestamp].imap(t => CreatedAt.spook(timeAlgebra.toOffsetDateTime(t)))(timeAlgebra.toTimestamp)

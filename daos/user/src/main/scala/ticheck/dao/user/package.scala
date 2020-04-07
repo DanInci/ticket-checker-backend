@@ -12,8 +12,6 @@ import ticheck.PhantomType
   */
 package object user {
 
-  type Email = Email.Type
-
   object HashedPassword extends PhantomType[String]
   type HashedPassword = HashedPassword.Type
 

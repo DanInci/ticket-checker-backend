@@ -19,6 +19,7 @@ CREATE TABLE "organization_membership" (
     "id"                UUID NOT NULL,
     "user_id"           UUID NOT NULL,
     "invite_id"         UUID NOT NULL,
+    "role"              VARCHAR NOT NULL,
     "joined_at"         TIMESTAMP NOT NULL
 );
 

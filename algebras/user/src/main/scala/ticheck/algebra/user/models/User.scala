@@ -1,6 +1,6 @@
 package ticheck.algebra.user.models
 
-import ticheck.UserID
+import ticheck._
 import ticheck.dao.user._
 
 /**
@@ -10,8 +10,7 @@ import ticheck.dao.user._
   *
   */
 final case class User(
-  id:   UserID,
-  emai: Email,
-  name: Name,
-  role: UserRole,
+  id:    UserID,
+  email: Email,
+  name:  Name,
 )

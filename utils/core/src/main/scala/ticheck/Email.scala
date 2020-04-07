@@ -1,6 +1,5 @@
-package ticheck.dao.user
+package ticheck
 
-import ticheck.SafePhantomType
 import ticheck.effect._
 import ticheck.json._
 
