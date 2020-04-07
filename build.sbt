@@ -38,6 +38,8 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `algebra-auth`,
     `algebra-auth-http`,
     `dao-organization`,
+    `dao-organization-invite`,
+    `dao-organization-membership`,
     `dao-user`,
     `dao-ticket`,
     `util-core`,
@@ -57,6 +59,8 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `algebra-auth`,
     `algebra-auth-http`,
     `dao-organization`,
+    `dao-organization-invite`,
+    `dao-organization-membership`,
     `dao-user`,
     `dao-ticket`,
     `util-core`,
@@ -199,10 +203,14 @@ lazy val `algebra-organization` = algebraModule("organization")
   .settings(commonSettings)
   .dependsOn(
     `dao-organization`,
+    `dao-organization-invite`,
+    `dao-organization-membership`,
     `util-core`,
   )
   .aggregate(
     `dao-organization`,
+    `dao-organization-invite`,
+    `dao-organization-membership`,
     `util-core`,
   )
 
@@ -252,6 +260,33 @@ lazy val `dao-organization` = daoModule("organization")
     `util-db`,
     `util-time`
   )
+
+lazy val `dao-organization-invite` = daoModule("organization-invite")
+  .settings(commonSettings)
+  .dependsOn(
+    `util-core`,
+    `util-db`,
+    `util-time`
+  )
+  .aggregate(
+    `util-core`,
+    `util-db`,
+    `util-time`
+  )
+
+lazy val `dao-organization-membership` = daoModule("organization-membership")
+  .settings(commonSettings)
+  .dependsOn(
+    `util-core`,
+    `util-db`,
+    `util-time`
+  )
+  .aggregate(
+    `util-core`,
+    `util-db`,
+    `util-time`
+  )
+
 
 
 //********************************************************************************************
