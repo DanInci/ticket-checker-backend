@@ -2,7 +2,7 @@ package ticheck.algebra.ticket
 
 import ticheck.dao.ticket.ModuleTicketDAO
 import ticheck.db.Transactor
-import ticheck.effect.Async
+import ticheck.effect._
 import ticheck.time.ModuleTimeAlgebra
 
 /**
@@ -16,5 +16,7 @@ trait ModuleTicketAlgebra[F[_]] { this: ModuleTicketDAO[F] with ModuleTimeAlgebr
   implicit protected def F: Async[F]
 
   implicit protected def transactor: Transactor[F]
+
+  def ticketAlgebra: F[TicketAlgebra[F]] = ???
 
 }

@@ -1,6 +1,6 @@
 package ticheck.organizer.ticket
 
-import ticheck.effect.Async
+import ticheck.effect._
 import ticheck.algebra.ticket.ModuleTicketAlgebra
 
 /**
@@ -12,5 +12,7 @@ import ticheck.algebra.ticket.ModuleTicketAlgebra
 trait ModuleTicketOrganizer[F[_]] { this: ModuleTicketAlgebra[F] =>
 
   implicit protected def F: Async[F]
+
+  def ticketOrganizer: F[TicketOrganizer[F]] = ???
 
 }

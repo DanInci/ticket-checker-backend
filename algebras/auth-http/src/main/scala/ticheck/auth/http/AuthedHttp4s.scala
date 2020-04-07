@@ -17,7 +17,7 @@ import org.http4s.util.CaseInsensitiveString
   */
 trait AuthedHttp4s[F[_], T <: AuthCtx, HT] {
 
-  implicit def F: Async[F]
+  implicit def S: Sync[F]
 
   protected def convertContext(ctx: T): F[HT]
 
@@ -32,7 +32,7 @@ trait AuthedHttp4s[F[_], T <: AuthCtx, HT] {
       val optHeader = req.headers.get(AuthedHttp4s.`X-Auth-Token`)
       optHeader match {
         case None =>
-          F.raiseError[T](MissingXAuthTokenHeaderAnomaly)
+          S.raiseError[T](MissingXAuthTokenHeaderAnomaly)
         case Some(header) =>
           JWTAuthToken.verifyAndParseRaw[F, T](config.secretKey)(header.value)
       }

@@ -27,12 +27,15 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
   .settings(commonSettings)
   .settings(serverPackSettings("ticket-checker-server" -> "com.ticket.checker.TicketCheckerApp"))
   .dependsOn(
+    `ticket-checker-rest`,
     `organizer-organization`,
     `organizer-user`,
     `organizer-ticket`,
     `algebra-organization`,
     `algebra-user`,
     `algebra-ticket`,
+    `algebra-auth`,
+    `algebra-auth-http`,
     `dao-organization`,
     `dao-user`,
     `dao-ticket`,
@@ -42,12 +45,15 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `util-time`,
   )
   .aggregate(
+    `ticket-checker-rest`,
     `organizer-organization`,
     `organizer-user`,
     `organizer-ticket`,
     `algebra-organization`,
     `algebra-user`,
     `algebra-ticket`,
+    `algebra-auth`,
+    `algebra-auth-http`,
     `dao-organization`,
     `dao-user`,
     `dao-ticket`,
@@ -55,6 +61,21 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `util-db`,
     `util-http`,
     `util-time`,
+  )
+
+lazy val `ticket-checker-rest` = Project(s"ticket-checker-rest", file(s"ticket-checker-rest"))
+  .settings(commonSettings)
+  .dependsOn(
+    `organizer-organization`,
+    `organizer-user`,
+    `organizer-ticket`,
+    `algebra-auth-http`
+  )
+  .aggregate(
+    `organizer-organization`,
+    `organizer-user`,
+    `organizer-ticket`,
+    `algebra-auth-http`
   )
 
 //********************************************************************************************
@@ -235,6 +256,7 @@ lazy val `util-core` = utilModule("core")
       Libraries.log4cats,
       Libraries.logbackClassic,
       Libraries.fuuid, //It's OK since it's a cats-effect wrapper over java.util.UUID
+      Libraries.fuuidCirce,
       Libraries.fs2,
     ),
   )
@@ -258,7 +280,9 @@ lazy val `util-db` = utilModule("db")
 lazy val `util-http` = utilModule("http")
   .settings(commonSettings)
   .settings(
-    libraryDependencies ++= Libraries.http4s,
+    libraryDependencies ++= Libraries.http4s ++ Seq(
+      Libraries.fuuidHttp4s
+    ),
   )
   .dependsOn(
     `util-core`,

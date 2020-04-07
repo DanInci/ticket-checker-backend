@@ -74,7 +74,7 @@ object TicketCheckerServerBuilder {
         cleanModuleF: F[Unit] = F.unit
 
         tcModule <- Resource.make[F, ModuleTicketChecker[F]](mkModuleF)((_: ModuleTicketChecker[F]) => cleanModuleF)
-        routes   <- Resource.liftF(tcModule.routes)
+        routes   <- Resource.liftF(tcModule.serverRoutes)
       } yield TicketCheckerServer[F](
         config = ac.serverConfig,
         module = tcModule,

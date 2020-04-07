@@ -1,6 +1,6 @@
 package ticheck.organizer.user
 
-import ticheck.effect.Async
+import ticheck.effect._
 import ticheck.algebra.user.ModuleUserAlgebra
 
 /**
@@ -12,5 +12,7 @@ import ticheck.algebra.user.ModuleUserAlgebra
 trait ModuleUserOrganizer[F[_]] { this: ModuleUserAlgebra[F] =>
 
   implicit protected def F: Async[F]
+
+  def userOrganizer: F[UserOrganizer[F]] = ???
 
 }

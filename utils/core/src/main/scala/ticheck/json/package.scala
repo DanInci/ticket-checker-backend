@@ -1,6 +1,8 @@
 package ticheck
 
 import busymachines.pureharm
+import shapeless.tag.@@
+import io.chrisdavenport.fuuid.circe._
 
 /**
   *
@@ -24,5 +26,13 @@ package object json
   implicit final val defaultDerivationConfiguration: io.circe.generic.extras.Configuration =
     io.circe.generic.extras.Configuration.default
       .withDiscriminator(pureharm.json.DefaultTypeDiscriminatorConfig.JsonTypeString)
+
+  implicit final def fuuidPhantomTypeDecoder[Tag]: Decoder[FUUID @@ Tag] =
+    Decoder[FUUID].asInstanceOf[Decoder[FUUID @@ Tag]]
+
+  implicit final def fuuidPhantomTypeEncoder[Tag]: Encoder[FUUID @@ Tag] =
+    Encoder[FUUID].asInstanceOf[Encoder[FUUID @@ Tag]]
+
+  object derive extends pureharm.json.SemiAutoDerivation
 
 }

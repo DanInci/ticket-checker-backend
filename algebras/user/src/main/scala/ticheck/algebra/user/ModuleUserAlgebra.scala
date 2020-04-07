@@ -17,4 +17,6 @@ trait ModuleUserAlgebra[F[_]] { this: ModuleUserDAO[F] with ModuleTimeAlgebra[F]
 
   implicit protected def transactor: Transactor[F]
 
+  def userAlgebra: F[UserAlgebra[F]] = ???
+
 }

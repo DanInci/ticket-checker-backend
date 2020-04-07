@@ -12,6 +12,7 @@ import ticheck.db._
 import ticheck.organizer.organization.ModuleOrganizationOrganizer
 import ticheck.organizer.ticket.ModuleTicketOrganizer
 import ticheck.organizer.user.ModuleUserOrganizer
+import ticheck.rest.{ModuleTicketCheckerRest, UserAuthedHttp4s, UserCtxMiddleware}
 import ticheck.time.{ModuleTimeAlgebra, TimeConfig}
 
 /**
@@ -21,9 +22,9 @@ import ticheck.time.{ModuleTimeAlgebra, TimeConfig}
   *
   */
 trait ModuleTicketChecker[F[_]]
-    extends ModuleOrganizationOrganizer[F] with ModuleOrganizationAlgebra[F] with ModuleOrganizationDAO[F]
-    with ModuleTicketOrganizer[F] with ModuleTicketAlgebra[F] with ModuleTicketDAO[F] with ModuleUserOrganizer[F]
-    with ModuleUserAlgebra[F] with ModuleUserDAO[F] with ModuleTimeAlgebra[F] {
+    extends ModuleTicketCheckerRest[F] with ModuleOrganizationOrganizer[F] with ModuleOrganizationAlgebra[F]
+    with ModuleOrganizationDAO[F] with ModuleTicketOrganizer[F] with ModuleTicketAlgebra[F] with ModuleTicketDAO[F]
+    with ModuleUserOrganizer[F] with ModuleUserAlgebra[F] with ModuleUserDAO[F] with ModuleTimeAlgebra[F] {
 
   override protected def transactor: Transactor[F]
 
@@ -31,13 +32,28 @@ trait ModuleTicketChecker[F[_]]
 
   override protected def F: Async[F] = C
 
-  protected def C: Concurrent[F]
+  implicit protected def C: Concurrent[F]
 
   protected def allConfigs: AllConfigs
 
   override protected def timeConfig: TimeConfig = allConfigs.timeConfig
 
-  def routes: F[HttpRoutes[F]] = C.delay(HttpRoutes.empty[F](C))
+  def serverRoutes: F[HttpRoutes[F]] = _serverRoutes
+
+  private lazy val authCtxMiddleware: F[UserCtxMiddleware[F]] =
+    for {
+      oa             <- organizationAlgebra
+      ua             <- userAlgebra
+      authMiddleware <- UserAuthedHttp4s.sync[F](allConfigs.jwtAuthConfig, ua, oa)(S)
+    } yield authMiddleware
+
+  private lazy val _serverRoutes: F[HttpRoutes[F]] =
+    for {
+      middleware <- authCtxMiddleware
+      routes     <- routes
+      authed     <- authedRoutes
+      toCombine = middleware(authed)
+    } yield routes <+> toCombine
 
 }
 
