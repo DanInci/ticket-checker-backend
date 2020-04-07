@@ -8,8 +8,9 @@ import org.http4s.{ParseFailure, QueryParamDecoder, QueryParameterValue}
 import shapeless.tag.@@
 import ticheck.time.TimeFormatters
 import ticheck.effect._
+import ticheck._
 
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 /**
   *
@@ -19,7 +20,13 @@ import scala.util.{Failure, Try}
   */
 trait RoutesHelpers {
 
-  implicit val localDateTimeQueryParamMatcher: QueryParamDecoder[LocalDateTime] =
+  implicit val pageOffsetQueryParamDecoder: QueryParamDecoder[PageNumber] =
+    QueryParamDecoder.intQueryParamDecoder.map(PageNumber.apply)
+
+  implicit val limitOffsetQueryParamDecoder: QueryParamDecoder[PageSize] =
+    QueryParamDecoder.intQueryParamDecoder.map(PageSize.apply)
+
+  implicit val localDateTimeQueryParamDecoder: QueryParamDecoder[LocalDateTime] =
     (value: QueryParameterValue) => {
       Try {
         LocalDateTime.parse(value.value, TimeFormatters.dateTimeFormatter)

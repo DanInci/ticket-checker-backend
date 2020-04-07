@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import org.http4s.dsl.Http4sDsl
-import ticheck.http.RoutesHelpers
+import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.effect._
 import ticheck.organizer.statistic.StatisticOrganizer
 import ticheck.rest._
@@ -17,7 +17,7 @@ import ticheck.rest._
   */
 final private[rest] case class StatisticRoutes[F[_]](private val statisticOrganizer: StatisticOrganizer[F])(
   implicit val F:                                                                    Async[F],
-) extends Http4sDsl[F] with RoutesHelpers {
+) extends Http4sDsl[F] with RoutesHelpers with QueryParamInstances {
 
   object TicketCategoryQueryParamMatcher    extends QueryParamDecoderMatcher[String]("type")
   object StatisticIntervalQueryParamMatcher extends QueryParamDecoderMatcher[String]("interval")

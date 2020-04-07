@@ -3,7 +3,7 @@ package ticheck.rest.routes
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import org.http4s.dsl.Http4sDsl
 import ticheck.effect._
-import ticheck.http.RoutesHelpers
+import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.organizer.organization.OrganizationOrganizer
 import ticheck.rest._
 
@@ -16,7 +16,7 @@ import ticheck.rest._
 final private[rest] class OrganizationRoutes[F[_]](
   private val organizationOrganizer: OrganizationOrganizer[F],
 )(implicit val F:                    Async[F])
-    extends Http4sDsl[F] with RoutesHelpers {
+    extends Http4sDsl[F] with RoutesHelpers with QueryParamInstances {
 
   object InviteCodeQueryParamMatcher extends QueryParamDecoderMatcher[String]("code")
 
@@ -26,7 +26,7 @@ final private[rest] class OrganizationRoutes[F[_]](
         resp <- Created()
       } yield resp
 
-    case GET -> Root / `organizations-route` as user =>
+    case GET -> Root / `organizations-route` :? PageOffsetMatcher(offset) +& PageLimitMatcher(limit) as user =>
       for {
         resp <- Ok()
       } yield resp
@@ -65,6 +65,12 @@ final private[rest] class OrganizationRoutes[F[_]](
   }
 
   private val organizationMembershipRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
+    case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route`
+          :? PageOffsetMatcher(offset) +& PageLimitMatcher(limit) as user =>
+      for {
+        resp <- Ok()
+      } yield resp
+
     case PUT -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / FUUIDVar(userId) as user =>
       for {
         resp <- Ok()

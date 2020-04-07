@@ -10,6 +10,6 @@ import ticheck.algebra.organization.models.Organization
   *
   */
 final case class UserAuthCtx(
-  user:         User,
-  organization: Organization,
+  user:          User,
+  organizations: List[Organization],
 )

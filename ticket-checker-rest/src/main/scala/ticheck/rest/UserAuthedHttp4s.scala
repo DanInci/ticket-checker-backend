@@ -20,9 +20,9 @@ final private[rest] case class UserAuthedHttp4s[F[_]] private (
 
   override protected def convertContext(ctx: RawAuthCtx): F[UserAuthCtx] =
     for {
-      user         <- userAlgebra.getById(ctx.userId)
-      organization <- organizationAlgebra.getById(ctx.organizationId)
-    } yield UserAuthCtx(user, organization)
+      user          <- userAlgebra.getById(ctx.userId)
+      organizations <- ctx.organizationIds.traverse(organizationAlgebra.getById)
+    } yield UserAuthCtx(user, organizations)
 
 }
 

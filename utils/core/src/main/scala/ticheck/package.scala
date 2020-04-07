@@ -28,4 +28,10 @@ package object ticheck
   object CreatedAt extends PhantomType[OffsetDateTime]
   type CreatedAt = CreatedAt.Type
 
+  object PageNumber extends PhantomType[Int]
+  type PageNumber = PageNumber.Type
+
+  object PageSize extends PhantomType[Int]
+  type PageSize = PageSize.Type
+
 }

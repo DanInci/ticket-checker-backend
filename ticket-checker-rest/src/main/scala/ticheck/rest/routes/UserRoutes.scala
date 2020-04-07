@@ -1,10 +1,10 @@
 package ticheck.rest.routes
 
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
-import org.http4s.HttpRoutes
+import org.http4s.{HttpRoutes, QueryParam}
 import org.http4s.dsl.Http4sDsl
 import ticheck.effect._
-import ticheck.http.RoutesHelpers
+import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.rest._
 import ticheck.organizer.user.UserOrganizer
 import ticheck.rest.UserAuthCtxRoutes
@@ -16,7 +16,7 @@ import ticheck.rest.UserAuthCtxRoutes
   *
   */
 final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserOrganizer[F])(implicit val F: Async[F])
-    extends Http4sDsl[F] with RoutesHelpers {
+    extends Http4sDsl[F] with RoutesHelpers with QueryParamInstances {
 
   private val usersRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case GET -> Root / `users-route` / FUUIDVar(uid) as user =>

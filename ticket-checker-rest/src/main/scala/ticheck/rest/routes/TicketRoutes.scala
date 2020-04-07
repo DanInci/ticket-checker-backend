@@ -6,7 +6,7 @@ import ticheck.effect._
 import ticheck.rest._
 import org.http4s.dsl.Http4sDsl
 import ticheck.{FUUID, UserID}
-import ticheck.http.RoutesHelpers
+import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.organizer.ticket.TicketOrganizer
 import ticheck.rest.UserAuthCtxRoutes
 
@@ -18,7 +18,7 @@ import ticheck.rest.UserAuthCtxRoutes
   */
 final private[rest] case class TicketRoutes[F[_]](private val ticketOrganizer: TicketOrganizer[F])(
   implicit val F:                                                              Async[F],
-) extends Http4sDsl[F] with RoutesHelpers {
+) extends Http4sDsl[F] with RoutesHelpers with QueryParamInstances {
 
   implicit val userIdQueryParamMatcher: QueryParamDecoder[UserID] = phantomTypeQueryParamDecoder[F, FUUID, UserID.Tag]
 
@@ -33,7 +33,8 @@ final private[rest] case class TicketRoutes[F[_]](private val ticketOrganizer: T
       } yield resp
 
     case GET -> Root / `organizations-route` / FUUIDVar(oid) / `tickets-route`
-          :? CategoryQueryParamMatcher(cat) +& UserIDQueryParamMatcher(uid) +& SearchQueryParamMatcher(searchStr) as user =>
+          :? CategoryQueryParamMatcher(cat) +& UserIDQueryParamMatcher(uid) +& SearchQueryParamMatcher(searchStr)
+            +& PageOffsetMatcher(offset) +& PageLimitMatcher(limit) as user =>
       for {
         resp <- Ok()
       } yield resp

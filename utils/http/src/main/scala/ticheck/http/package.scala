@@ -10,7 +10,7 @@ import org.http4s.Header
   * @since 3/30/2020
   *
   */
-package object http extends Http4sCirceInstances {
+package object http extends Http4sCirceInstances with RoutesHelpers {
 
   object Http4sEC extends PhantomType[ExecutionContext] {
     def safe(ec: ExecutionContextFT): this.Type = this.apply(ec)

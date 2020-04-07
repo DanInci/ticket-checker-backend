@@ -10,8 +10,8 @@ import ticheck.{OrganizationID, UserID}
   *
   */
 case class RawAuthCtx(
-  userId:         UserID,
-  organizationId: OrganizationID,
+  userId:          UserID,
+  organizationIds: List[OrganizationID],
 ) extends AuthCtx
 
 object RawAuthCtx {
