@@ -9,5 +9,6 @@ import java.time.format.DateTimeFormatter
   *
   */
 object TimeFormatters {
-  lazy val timestampFormatter: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
+  lazy val dateFormatter:     DateTimeFormatter = DateTimeFormatter.ISO_DATE
+  lazy val dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
 }

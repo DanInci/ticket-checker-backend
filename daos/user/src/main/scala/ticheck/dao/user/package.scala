@@ -3,7 +3,6 @@ package ticheck.dao
 import java.time.OffsetDateTime
 
 import ticheck.PhantomType
-import ticheck.PhantomFUUID
 
 /**
   *
@@ -12,9 +11,6 @@ import ticheck.PhantomFUUID
   *
   */
 package object user {
-
-  object UserID extends PhantomFUUID
-  type UserID = UserID.Type
 
   type Email = Email.Type
 

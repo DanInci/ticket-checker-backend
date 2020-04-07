@@ -14,4 +14,9 @@ package object rest {
   type UserCtxMiddleware[F[_]] = AuthMiddleware[F, UserAuthCtx]
   type UserAuthCtxRoutes[F[_]] = AuthedRoutes[UserAuthCtx, F]
 
+  lazy val `organizations-route` = "organizations"
+  lazy val `tickets-route`       = "tickets"
+  lazy val `users-route`         = "users"
+  lazy val `statistics-route`    = "statistics"
+
 }

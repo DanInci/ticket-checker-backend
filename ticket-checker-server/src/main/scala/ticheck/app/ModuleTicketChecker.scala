@@ -9,9 +9,6 @@ import ticheck.dao.ticket.ModuleTicketDAO
 import ticheck.dao.user.ModuleUserDAO
 import ticheck.effect._
 import ticheck.db._
-import ticheck.organizer.organization.ModuleOrganizationOrganizer
-import ticheck.organizer.ticket.ModuleTicketOrganizer
-import ticheck.organizer.user.ModuleUserOrganizer
 import ticheck.rest.{ModuleTicketCheckerRest, UserAuthedHttp4s, UserCtxMiddleware}
 import ticheck.time.{ModuleTimeAlgebra, TimeConfig}
 
@@ -22,9 +19,9 @@ import ticheck.time.{ModuleTimeAlgebra, TimeConfig}
   *
   */
 trait ModuleTicketChecker[F[_]]
-    extends ModuleTicketCheckerRest[F] with ModuleOrganizationOrganizer[F] with ModuleOrganizationAlgebra[F]
-    with ModuleOrganizationDAO[F] with ModuleTicketOrganizer[F] with ModuleTicketAlgebra[F] with ModuleTicketDAO[F]
-    with ModuleUserOrganizer[F] with ModuleUserAlgebra[F] with ModuleUserDAO[F] with ModuleTimeAlgebra[F] {
+    extends ModuleTicketCheckerRest[F] with ModuleOrganizationAlgebra[F] with ModuleOrganizationDAO[F]
+    with ModuleTicketAlgebra[F] with ModuleTicketDAO[F] with ModuleUserAlgebra[F] with ModuleUserDAO[F]
+    with ModuleTimeAlgebra[F] {
 
   override protected def transactor: Transactor[F]
 

@@ -31,6 +31,7 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `organizer-organization`,
     `organizer-user`,
     `organizer-ticket`,
+    `organizer-statistic`,
     `algebra-organization`,
     `algebra-user`,
     `algebra-ticket`,
@@ -49,6 +50,7 @@ lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticke
     `organizer-organization`,
     `organizer-user`,
     `organizer-ticket`,
+    `organizer-statistic`,
     `algebra-organization`,
     `algebra-user`,
     `algebra-ticket`,
@@ -69,12 +71,14 @@ lazy val `ticket-checker-rest` = Project(s"ticket-checker-rest", file(s"ticket-c
     `organizer-organization`,
     `organizer-user`,
     `organizer-ticket`,
+    `organizer-statistic`,
     `algebra-auth-http`
   )
   .aggregate(
     `organizer-organization`,
     `organizer-user`,
     `organizer-ticket`,
+    `organizer-statistic`,
     `algebra-auth-http`
   )
 
@@ -121,6 +125,19 @@ lazy val `organizer-organization` = organizerModule("organization")
   )
   .aggregate(
     `algebra-organization`,
+    `util-core`,
+    `util-http`,
+  )
+
+lazy val `organizer-statistic` = organizerModule("statistic")
+  .settings(commonSettings)
+  .dependsOn(
+    `algebra-ticket`,
+    `util-core`,
+    `util-http`,
+  )
+  .aggregate(
+    `algebra-ticket`,
     `util-core`,
     `util-http`,
   )

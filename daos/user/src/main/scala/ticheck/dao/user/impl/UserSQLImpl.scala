@@ -1,5 +1,6 @@
 package ticheck.dao.user.impl
 
+import ticheck.UserID
 import ticheck.effect._
 import ticheck.dao.user.models.UserRecord
 import ticheck.dao.user._

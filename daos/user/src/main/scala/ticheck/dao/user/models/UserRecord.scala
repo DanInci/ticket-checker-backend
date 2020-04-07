@@ -1,6 +1,6 @@
 package ticheck.dao.user.models
 
-import ticheck.{CreatedAt, OrganizationID}
+import ticheck.{CreatedAt, OrganizationID, UserID}
 import ticheck.dao.user._
 
 /**
