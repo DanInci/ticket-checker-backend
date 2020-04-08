@@ -21,7 +21,7 @@ import ticheck.effect._
   */
 trait GenericComposites extends LegacyLocalDateMetaInstance with LegacyInstantMetaInstance {
 
-  implicit val timestampMeta: Meta[Timestamp] = implicitly
+  implicit val timestampMeta: Meta[Timestamp] = doobie.implicits.javasql.TimestampMeta
 
   implicit def phantomLongMeta[Tag](implicit tt: TypeTag[Long @@ Tag]): Meta[Long @@ Tag] =
     Meta.LongMeta.timap(v => shapeless.tag[Tag](v))(identity)

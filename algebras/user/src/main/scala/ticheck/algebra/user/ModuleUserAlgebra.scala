@@ -17,6 +17,12 @@ trait ModuleUserAlgebra[F[_]] { this: ModuleUserDAO[F] with ModuleTimeAlgebra[F]
 
   implicit protected def transactor: Transactor[F]
 
-  def userAlgebra: F[UserAlgebra[F]] = ???
+  def userModuleAlgebra: F[UserModuleAlgebra[F]] = _userModuleAlgebra
+
+  private lazy val _userModuleAlgebra: F[UserModuleAlgebra[F]] =
+    for {
+      usql <- userSQL
+      ua   <- impl.UserAlgebraImpl.async(usql)
+    } yield ua
 
 }

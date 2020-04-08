@@ -41,9 +41,9 @@ trait ModuleTicketChecker[F[_]]
 
   private lazy val authCtxMiddleware: F[UserCtxMiddleware[F]] =
     for {
-      oa             <- organizationAlgebra
-      ua             <- userAlgebra
-      authMiddleware <- UserAuthedHttp4s.sync[F](allConfigs.jwtAuthConfig, ua, oa)(S)
+      uma            <- userModuleAlgebra
+      oma            <- organizationModuleAlgebra
+      authMiddleware <- UserAuthedHttp4s.sync[F](allConfigs.jwtAuthConfig, uma, oma)(S)
     } yield authMiddleware
 
   private lazy val _serverRoutes: F[HttpRoutes[F]] =

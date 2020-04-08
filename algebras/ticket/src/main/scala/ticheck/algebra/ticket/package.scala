@@ -12,6 +12,8 @@ import ticheck.PhantomType
   */
 package object ticket {
 
+  type TicketModuleAlgebra[F[_]] = TicketAlgebra[F] with TicketStatisticsAlgebra[F]
+
   object StatisticsSize extends PhantomType[Int]
   type StatisticsSize = StatisticsSize.Type
 

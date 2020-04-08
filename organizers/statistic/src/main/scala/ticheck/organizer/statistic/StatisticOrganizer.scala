@@ -1,5 +1,6 @@
 package ticheck.organizer.statistic
 
+import ticheck.organizer.statistic.impl.StatisticOrganizerImpl
 import ticheck.OrganizationID
 import ticheck.algebra.ticket._
 import ticheck.algebra.ticket.models.TicketStatistic
@@ -27,6 +28,6 @@ trait StatisticOrganizer[F[_]] {
 object StatisticOrganizer {
 
   def apply[F[_]: Sync](ticketStatisticsAlgebra: TicketStatisticsAlgebra[F]): F[StatisticOrganizer[F]] =
-    Sync[F].pure(new impl.StatisticOrganizerImpl[F](ticketStatisticsAlgebra))
+    Sync[F].pure(new StatisticOrganizerImpl[F](ticketStatisticsAlgebra))
 
 }

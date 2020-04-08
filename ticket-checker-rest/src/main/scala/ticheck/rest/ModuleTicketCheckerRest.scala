@@ -36,26 +36,26 @@ trait ModuleTicketCheckerRest[F[_]] {
 
   private lazy val _organizationRoutes: F[OrganizationRoutes[F]] =
     for {
-      oa           <- organizationAlgebra
-      orgOrganizer <- OrganizationOrganizer[F](oa)
+      oma          <- organizationModuleAlgebra
+      orgOrganizer <- OrganizationOrganizer[F](oma)
     } yield new OrganizationRoutes[F](orgOrganizer)
 
   private lazy val _userRoutes: F[UserRoutes[F]] =
     for {
-      ua            <- userAlgebra
-      userOrganizer <- UserOrganizer[F](ua)
+      uma           <- userModuleAlgebra
+      userOrganizer <- UserOrganizer[F](uma)
     } yield new UserRoutes[F](userOrganizer)
 
   private lazy val _ticketRoutes: F[TicketRoutes[F]] =
     for {
-      ta              <- ticketAlgebra
-      ticketOrganizer <- TicketOrganizer[F](ta)
+      tma             <- ticketModuleAlgebra
+      ticketOrganizer <- TicketOrganizer[F](tma)
     } yield new TicketRoutes[F](ticketOrganizer)
 
   private lazy val _statisticRoutes: F[StatisticRoutes[F]] =
     for {
-      tsa                <- ticketStatisticsAlgebra
-      statisticOrganizer <- StatisticOrganizer[F](tsa)
+      tma                <- ticketModuleAlgebra
+      statisticOrganizer <- StatisticOrganizer[F](tma)
     } yield new StatisticRoutes[F](statisticOrganizer)
 
   private lazy val _routes: F[HttpRoutes[F]] =

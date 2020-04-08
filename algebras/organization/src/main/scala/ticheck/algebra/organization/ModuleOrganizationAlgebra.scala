@@ -21,6 +21,14 @@ trait ModuleOrganizationAlgebra[F[_]] {
 
   implicit protected def transactor: Transactor[F]
 
-  def organizationAlgebra: F[OrganizationAlgebra[F]] = ???
+  def organizationModuleAlgebra: F[OrganizationModuleAlgebra[F]] = _organizationModuleAlgebra
+
+  private lazy val _organizationModuleAlgebra: F[OrganizationModuleAlgebra[F]] =
+    for {
+      osql  <- organizationSQL
+      oisql <- organizationInviteSQL
+      omsql <- organizationMembershipSQL
+      oa    <- impl.OrganizationAlgebraImpl.async(osql, oisql, omsql)
+    } yield oa
 
 }

@@ -17,8 +17,12 @@ trait ModuleTicketAlgebra[F[_]] { this: ModuleTicketDAO[F] with ModuleTimeAlgebr
 
   implicit protected def transactor: Transactor[F]
 
-  def ticketAlgebra: F[TicketAlgebra[F]] = ???
+  def ticketModuleAlgebra: F[TicketModuleAlgebra[F]] = _ticketModuleAlgebra
 
-  def ticketStatisticsAlgebra: F[TicketStatisticsAlgebra[F]] = ???
+  private lazy val _ticketModuleAlgebra: F[TicketModuleAlgebra[F]] =
+    for {
+      tsql <- ticketSQL
+      ta   <- impl.TicketAlgebraImpl.async(tsql)
+    } yield ta
 
 }
