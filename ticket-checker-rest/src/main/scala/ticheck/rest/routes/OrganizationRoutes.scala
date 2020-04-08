@@ -1,11 +1,16 @@
 package ticheck.rest.routes
 
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
+import org.http4s.QueryParamDecoder
 import org.http4s.dsl.Http4sDsl
+import ticheck.{OrganizationID, OrganizationInviteID, PagingInfo, UserID}
+import ticheck.algebra.organization.models._
+import ticheck.dao.organization.invite.InviteCode
 import ticheck.effect._
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.organizer.organization.OrganizationOrganizer
 import ticheck.rest._
+import ticheck.http._
 
 /**
   *
@@ -18,48 +23,62 @@ final private[rest] class OrganizationRoutes[F[_]](
 )(implicit val F:                    Async[F])
     extends Http4sDsl[F] with RoutesHelpers with QueryParamInstances {
 
-  object InviteCodeQueryParamMatcher extends QueryParamDecoderMatcher[String]("code")
+  implicit val inviteCodeQueryParamMatcher: QueryParamDecoder[InviteCode] =
+    phantomTypeQueryParamDecoder[F, String, InviteCode.Tag]
+
+  object InviteCodeQueryParamMatcher extends QueryParamDecoderMatcher[InviteCode]("code")
 
   private val organizationRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
-    case POST -> Root / `organizations-route` as user =>
+    case (req @ POST -> Root / `organizations-route`) as user =>
       for {
-        resp <- Created()
+        definition <- req.as[OrganizationDefinition]
+        profile    <- organizationOrganizer.registerOrganization(definition)(user)
+        resp       <- Created(profile)
       } yield resp
 
     case GET -> Root / `organizations-route` :? PageOffsetMatcher(offset) +& PageLimitMatcher(limit) as user =>
       for {
-        resp <- Ok()
+        organizations <- organizationOrganizer.getOrganizationList(PagingInfo(offset, limit))(user)
+        resp          <- Ok(organizations)
       } yield resp
 
     case GET -> Root / `organizations-route` / FUUIDVar(orgId) as user =>
       for {
-        resp <- Ok()
+        profile <- organizationOrganizer.getOrganizationProfile(OrganizationID.spook(orgId))(user)
+        resp    <- Ok(profile)
       } yield resp
 
-    case PUT -> Root / `organizations-route` / FUUIDVar(orgId) as user =>
+    case (req @ PUT -> Root / `organizations-route` / FUUIDVar(orgId)) as user =>
       for {
-        resp <- NoContent()
+        definition <- req.as[OrganizationDefinition]
+        profile    <- organizationOrganizer.updateOrganizationProfile(OrganizationID.spook(orgId), definition)(user)
+        resp       <- Ok(profile)
       } yield resp
 
     case DELETE -> Root / `organizations-route` / FUUIDVar(orgId) as user =>
       for {
+        _    <- organizationOrganizer.deleteOrganization(OrganizationID.spook(orgId))(user)
         resp <- NoContent()
       } yield resp
   }
 
   private val organizationInviteRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
-    case POST -> Root / `organizations-route` / FUUIDVar(orgId) / "invite" as user =>
+    case (req @ POST -> Root / `organizations-route` / FUUIDVar(orgId) / "invite") as user =>
       for {
-        resp <- Created()
+        definition <- req.as[OrganizationInviteDefinition]
+        invite     <- organizationOrganizer.invite(OrganizationID.spook(orgId), definition)(user)
+        resp       <- Created(invite)
       } yield resp
 
     case DELETE -> Root / `organizations-route` / FUUIDVar(orgId) / "invite" / FUUIDVar(inviteId) as user =>
       for {
-        resp <- Created()
+        _    <- organizationOrganizer.cancelInvite(OrganizationID.spook(orgId), OrganizationInviteID.spook(inviteId))(user)
+        resp <- NoContent()
       } yield resp
 
     case GET -> Root / `organizations-route` / "join" :? InviteCodeQueryParamMatcher(code) as user =>
       for {
+        _    <- organizationOrganizer.join(code)(user)
         resp <- Ok()
       } yield resp
   }
@@ -68,16 +87,22 @@ final private[rest] class OrganizationRoutes[F[_]](
     case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route`
           :? PageOffsetMatcher(offset) +& PageLimitMatcher(limit) as user =>
       for {
-        resp <- Ok()
+        members <- organizationOrganizer
+          .getOrganizationMemberList(OrganizationID.spook(orgId), PagingInfo(offset, limit))(user)
+        resp <- Ok(members)
       } yield resp
 
-    case PUT -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / FUUIDVar(userId) as user =>
+    case (req @ PUT -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / FUUIDVar(userId)) as user =>
       for {
-        resp <- Ok()
+        definition <- req.as[OrganizationMemberDefinition]
+        member <- organizationOrganizer
+          .updateOrganizationMember(OrganizationID.spook(orgId), UserID.spook(userId), definition)(user)
+        resp <- Ok(member)
       } yield resp
 
     case DELETE -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / FUUIDVar(userId) as user =>
       for {
+        _    <- organizationOrganizer.removeOrganizationMember(OrganizationID.spook(orgId), UserID.spook(userId))(user)
         resp <- NoContent()
       } yield resp
   }

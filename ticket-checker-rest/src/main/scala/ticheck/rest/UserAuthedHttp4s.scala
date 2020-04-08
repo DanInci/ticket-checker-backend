@@ -2,6 +2,7 @@ package ticheck.rest
 
 import ticheck.algebra.organization.OrganizationAlgebra
 import ticheck.algebra.user.UserAlgebra
+import ticheck.algebra.user.models.auth.{RawAuthCtx, UserAuthCtx}
 import ticheck.auth.JWTAuthConfig
 import ticheck.effect._
 import ticheck.auth.http.AuthedHttp4s
@@ -20,9 +21,8 @@ final private[rest] case class UserAuthedHttp4s[F[_]] private (
 
   override protected def convertContext(ctx: RawAuthCtx): F[UserAuthCtx] =
     for {
-      user          <- userAlgebra.getById(ctx.userId)
-      organizations <- ctx.organizationIds.traverse(organizationAlgebra.getById)
-    } yield UserAuthCtx(user, organizations)
+      user <- userAlgebra.getById(ctx.userId)
+    } yield UserAuthCtx(user, ctx.organizationIds)
 
 }
 

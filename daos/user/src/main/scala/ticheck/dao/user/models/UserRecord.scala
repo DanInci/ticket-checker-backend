@@ -1,6 +1,6 @@
 package ticheck.dao.user.models
 
-import ticheck.{CreatedAt, Email, OrganizationID, UserID}
+import ticheck.{CreatedAt, Email, Name, UserID}
 import ticheck.dao.user._
 
 /**
@@ -11,7 +11,6 @@ import ticheck.dao.user._
   */
 case class UserRecord(
   id:             UserID,
-  organizationId: OrganizationID,
   email:          Email,
   hashedPassword: HashedPassword,
   name:           Name,

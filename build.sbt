@@ -111,11 +111,13 @@ lazy val `organizer-ticket` = organizerModule("ticket")
   .settings(commonSettings)
   .dependsOn(
     `algebra-ticket`,
+    `algebra-user`,
     `util-core`,
     `util-http`,
   )
   .aggregate(
     `algebra-ticket`,
+    `algebra-user`,
     `util-core`,
     `util-http`,
   )
@@ -124,11 +126,13 @@ lazy val `organizer-organization` = organizerModule("organization")
   .settings(commonSettings)
   .dependsOn(
     `algebra-organization`,
+    `algebra-user`,
     `util-core`,
     `util-http`,
   )
   .aggregate(
     `algebra-organization`,
+    `algebra-user`,
     `util-core`,
     `util-http`,
   )
@@ -137,11 +141,13 @@ lazy val `organizer-statistic` = organizerModule("statistic")
   .settings(commonSettings)
   .dependsOn(
     `algebra-ticket`,
+    `algebra-user`,
     `util-core`,
     `util-http`,
   )
   .aggregate(
     `algebra-ticket`,
+    `algebra-user`,
     `util-core`,
     `util-http`,
   )
@@ -191,10 +197,12 @@ lazy val `algebra-ticket` = algebraModule("ticket")
 lazy val `algebra-user` = algebraModule("user")
   .settings(commonSettings)
   .dependsOn(
+    `algebra-auth`,
     `dao-user`,
     `util-core`,
   )
   .aggregate(
+    `algebra-auth`,
     `dao-user`,
     `util-core`,
   )

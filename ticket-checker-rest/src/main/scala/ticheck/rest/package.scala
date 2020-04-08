@@ -2,6 +2,7 @@ package ticheck
 
 import org.http4s.AuthedRoutes
 import org.http4s.server.AuthMiddleware
+import ticheck.algebra.user.models.auth.UserAuthCtx
 
 /**
   *

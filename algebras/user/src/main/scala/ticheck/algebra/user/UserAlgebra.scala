@@ -1,7 +1,7 @@
 package ticheck.algebra.user
 
 import ticheck.UserID
-import ticheck.algebra.user.models.User
+import ticheck.algebra.user.models.UserProfile
 
 /**
   *
@@ -11,6 +11,6 @@ import ticheck.algebra.user.models.User
   */
 trait UserAlgebra[F[_]] {
 
-  def getById(id: UserID): F[User]
+  def getById(id: UserID): F[UserProfile]
 
 }

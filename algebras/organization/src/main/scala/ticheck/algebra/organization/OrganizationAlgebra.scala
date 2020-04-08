@@ -1,7 +1,7 @@
 package ticheck.algebra.organization
 
 import ticheck.OrganizationID
-import ticheck.algebra.organization.models.Organization
+import ticheck.algebra.organization.models.OrganizationProfile
 
 /**
   *
@@ -11,6 +11,6 @@ import ticheck.algebra.organization.models.Organization
   */
 trait OrganizationAlgebra[F[_]] {
 
-  def getById(id: OrganizationID): F[Organization]
+  def getById(id: OrganizationID): F[OrganizationProfile]
 
 }

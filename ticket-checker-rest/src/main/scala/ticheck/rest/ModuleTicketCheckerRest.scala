@@ -1,6 +1,9 @@
 package ticheck.rest
 
 import org.http4s.HttpRoutes
+import ticheck.algebra.organization.ModuleOrganizationAlgebra
+import ticheck.algebra.ticket.ModuleTicketAlgebra
+import ticheck.algebra.user.ModuleUserAlgebra
 import ticheck.effect._
 import ticheck.organizer.organization.OrganizationOrganizer
 import ticheck.organizer.statistic.StatisticOrganizer
@@ -15,6 +18,7 @@ import ticheck.rest.routes.{OrganizationRoutes, StatisticRoutes, TicketRoutes, U
   *
   */
 trait ModuleTicketCheckerRest[F[_]] {
+  this: ModuleOrganizationAlgebra[F] with ModuleUserAlgebra[F] with ModuleTicketAlgebra[F] =>
 
   implicit protected def F: Async[F]
 
@@ -32,12 +36,14 @@ trait ModuleTicketCheckerRest[F[_]] {
 
   private lazy val _organizationRoutes: F[OrganizationRoutes[F]] =
     for {
-      orgOrganizer <- OrganizationOrganizer[F]
+      oa           <- organizationAlgebra
+      orgOrganizer <- OrganizationOrganizer[F](oa)
     } yield new OrganizationRoutes[F](orgOrganizer)
 
   private lazy val _userRoutes: F[UserRoutes[F]] =
     for {
-      userOrganizer <- UserOrganizer[F]
+      ua            <- userAlgebra
+      userOrganizer <- UserOrganizer[F](ua)
     } yield new UserRoutes[F](userOrganizer)
 
   private lazy val _ticketRoutes: F[TicketRoutes[F]] =

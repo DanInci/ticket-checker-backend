@@ -3,9 +3,12 @@ package ticheck.rest.routes
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
+import ticheck.UserID
+import ticheck.algebra.user.models.{UserDefinition, UserLoginRequest, UserRegistration}
 import ticheck.effect._
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.rest._
+import ticheck.http._
 import ticheck.organizer.user.UserOrganizer
 import ticheck.rest.UserAuthCtxRoutes
 
@@ -21,16 +24,20 @@ final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserO
   private val usersRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case GET -> Root / `users-route` / FUUIDVar(uid) as user =>
       for {
-        resp <- Ok()
+        profile <- userOrganizer.getUserProfile(UserID.spook(uid))(user)
+        resp    <- Ok(profile)
       } yield resp
 
-    case req @ PUT -> Root / `users-route` / FUUIDVar(uid) as user =>
+    case (req @ PUT -> Root / `users-route` / FUUIDVar(uid)) as user =>
       for {
-        resp <- Ok()
+        newProfile     <- req.as[UserDefinition]
+        updatedProfile <- userOrganizer.updateUserProfile(UserID.spook(uid), newProfile)(user)
+        resp           <- Ok(updatedProfile)
       } yield resp
 
     case DELETE -> Root / `users-route` / FUUIDVar(uid) as user =>
       for {
+        _    <- userOrganizer.deleteUser(UserID.spook(uid))(user)
         resp <- NoContent()
       } yield resp
   }
@@ -38,12 +45,16 @@ final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserO
   private val registerLoginRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ POST -> Root / "register" =>
       for {
-        resp <- Created()
+        regData <- req.as[UserRegistration]
+        _       <- userOrganizer.register(regData)
+        resp    <- Created()
       } yield resp
 
     case req @ POST -> Root / "login" =>
       for {
-        resp <- Ok()
+        loginData     <- req.as[UserLoginRequest]
+        loginResponse <- userOrganizer.login(loginData)
+        resp          <- Ok(loginResponse)
       } yield resp
   }
 

@@ -2,6 +2,7 @@ package ticheck.rest
 
 import cats.Defer
 import org.http4s.{AuthedRequest, AuthedRoutes, Response}
+import ticheck.algebra.user.models.auth.UserAuthCtx
 import ticheck.effect._
 
 /**

@@ -3,6 +3,7 @@ package ticheck
 import busymachines.pureharm
 import shapeless.tag.@@
 import io.chrisdavenport.fuuid.circe._
+import io.circe.Decoder.Result
 
 /**
   *
@@ -32,6 +33,11 @@ package object json
 
   implicit final def fuuidPhantomTypeEncoder[Tag]: Encoder[FUUID @@ Tag] =
     Encoder[FUUID].asInstanceOf[Encoder[FUUID @@ Tag]]
+
+  implicit final def listCodec[A](implicit codec: Codec[A]): Codec[List[A]] = new Codec[List[A]] {
+    override def apply(a: List[A]): Json            = Json.fromValues(a.map(codec.apply))
+    override def apply(c: HCursor): Result[List[A]] = Decoder.decodeList(codec).apply(c)
+  }
 
   object derive extends pureharm.json.SemiAutoDerivation
 

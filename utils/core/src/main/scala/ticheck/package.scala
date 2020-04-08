@@ -21,6 +21,9 @@ package object ticheck
   object UserID extends PhantomFUUID
   type UserID = UserID.Type
 
+  object Name extends PhantomType[String]
+  type Name = Name.Type
+
   object OrganizationID extends PhantomFUUID
   type OrganizationID = OrganizationID.Type
 

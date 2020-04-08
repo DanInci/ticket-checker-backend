@@ -15,9 +15,6 @@ package object user {
   object HashedPassword extends PhantomType[String]
   type HashedPassword = HashedPassword.Type
 
-  object Name extends PhantomType[String]
-  type Name = Name.Type
-
   object EditedAt extends PhantomType[OffsetDateTime]
   type EditedAt = EditedAt.Type
 

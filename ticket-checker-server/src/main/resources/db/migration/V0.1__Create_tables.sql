@@ -25,7 +25,6 @@ CREATE TABLE "organization_membership" (
 
 CREATE TABLE "user" (
     "id"                UUID NOT NULL,
-    "organization_id"   UUID NOT NULL,
     "email"             VARCHAR UNIQUE NOT NULL,
     "hashed_password"   VARCHAR NOT NULL,
     "name"              VARCHAR NOT NULL,
@@ -58,7 +57,6 @@ ALTER TABLE "organization_invite" ADD CONSTRAINT organization_invite_organizatio
 ALTER TABLE "organization_membership" ADD CONSTRAINT organization_membership_user_id_fk FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
 ALTER TABLE "organization_membership" ADD CONSTRAINT organization_membership_invite_id_fk FOREIGN KEY ("invite_id") REFERENCES "organization_invite" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "user" ADD CONSTRAINT user_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_sold_by_id_fk FOREIGN KEY ("sold_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_validated_by_id_fk FOREIGN KEY ("validated_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
