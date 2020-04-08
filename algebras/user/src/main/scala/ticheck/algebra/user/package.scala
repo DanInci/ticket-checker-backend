@@ -1,7 +1,5 @@
 package ticheck.algebra
 
-import ticheck.PhantomType
-
 /**
   *
   * @author Daniel Incicau, https://github.com/DanInci
@@ -11,8 +9,5 @@ import ticheck.PhantomType
 package object user {
 
   type UserModuleAlgebra[F[_]] = UserAlgebra[F]
-
-  object PlainTextPassword extends PhantomType[String]
-  type PlainTextPassword = PlainTextPassword.Type
 
 }

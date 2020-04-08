@@ -1,11 +1,10 @@
 package ticheck.rest
 
-import ticheck.algebra.organization.OrganizationAlgebra
-import ticheck.algebra.user.UserAlgebra
-import ticheck.algebra.user.models.auth.{RawAuthCtx, UserAuthCtx}
-import ticheck.auth.JWTAuthConfig
+import ticheck.auth.models.UserAuthCtx
+import ticheck.auth.{AuthAlgebra, JWTAuthConfig}
 import ticheck.effect._
 import ticheck.auth.http.AuthedHttp4s
+import ticheck.auth.models.RawAuthCtx
 
 /**
   *
@@ -14,26 +13,22 @@ import ticheck.auth.http.AuthedHttp4s
   *
   */
 final private[rest] case class UserAuthedHttp4s[F[_]] private (
-  userAlgebra:             UserAlgebra[F],
-  organizationAlgebra:     OrganizationAlgebra[F],
+  authAlgebra:             AuthAlgebra[F],
 )(implicit override val S: Sync[F])
     extends AuthedHttp4s[F, RawAuthCtx, UserAuthCtx] {
 
   override protected def convertContext(ctx: RawAuthCtx): F[UserAuthCtx] =
-    for {
-      user <- userAlgebra.getById(ctx.userId)
-    } yield UserAuthCtx(user, ctx.organizationIds)
+    authAlgebra.convert(ctx)
 
 }
 
 object UserAuthedHttp4s {
 
   def sync[F[_]: Sync](
-    jwtAuthConfig:       JWTAuthConfig,
-    userAlgebra:         UserAlgebra[F],
-    organizationAlgebra: OrganizationAlgebra[F],
+    jwtAuthConfig: JWTAuthConfig,
+    authAlgebra:   AuthAlgebra[F],
   ): F[UserCtxMiddleware[F]] = Sync[F].delay {
-    val authedHttp4s = new UserAuthedHttp4s[F](userAlgebra, organizationAlgebra)
+    val authedHttp4s = new UserAuthedHttp4s[F](authAlgebra)
     authedHttp4s.authMiddleware(jwtAuthConfig)
   }
 

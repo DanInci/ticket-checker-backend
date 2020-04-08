@@ -1,7 +1,7 @@
-package ticheck.algebra.user.models
+package ticheck.auth.models
 
+import ticheck.auth.PlainTextPassword
 import ticheck.{Email, Name}
-import ticheck.algebra.user.PlainTextPassword
 
 /**
   *
@@ -9,15 +9,15 @@ import ticheck.algebra.user.PlainTextPassword
   * @since 4/8/2020
   *
   */
-final case class UserRegistration(
+final case class RegistrationRequest(
   email:    Email,
   password: PlainTextPassword,
   name:     Name,
 )
 
-object UserRegistration {
+object RegistrationRequest {
   import ticheck.json._
 
-  implicit val jsonCodec: Codec[UserRegistration] = derive.codec[UserRegistration]
+  implicit val jsonCodec: Codec[RegistrationRequest] = derive.codec[RegistrationRequest]
 
 }

@@ -2,9 +2,12 @@ package ticheck.organizer.user
 
 import ticheck.UserID
 import ticheck.algebra.user.UserAlgebra
-import ticheck.algebra.user.models.auth.UserAuthCtx
+import ticheck.auth.models.UserAuthCtx
 import ticheck.algebra.user.models._
+import ticheck.auth.AuthAlgebra
+import ticheck.auth.models.{LoginRequest, RegistrationRequest}
 import ticheck.effect.Sync
+import ticheck.organizer.user.models.LoginResponse
 
 /**
   *
@@ -14,9 +17,9 @@ import ticheck.effect.Sync
   */
 trait UserOrganizer[F[_]] {
 
-  def register(regData: UserRegistration): F[Unit]
+  def register(regData: RegistrationRequest): F[Unit]
 
-  def login(loginData: UserLoginRequest): F[UserLoginResponse]
+  def login(loginData: LoginRequest): F[LoginResponse]
 
   def getUserProfile(id: UserID)(implicit ctx: UserAuthCtx): F[UserProfile]
 
@@ -28,8 +31,8 @@ trait UserOrganizer[F[_]] {
 
 object UserOrganizer {
 
-  def apply[F[_]: Sync](userAlgebra: UserAlgebra[F]): F[UserOrganizer[F]] = Sync[F].pure(
-    new impl.UserOrganizerImpl[F](userAlgebra),
+  def apply[F[_]: Sync](authAlgebra: AuthAlgebra[F], userAlgebra: UserAlgebra[F]): F[UserOrganizer[F]] = Sync[F].pure(
+    new impl.UserOrganizerImpl[F](authAlgebra, userAlgebra),
   )
 
 }

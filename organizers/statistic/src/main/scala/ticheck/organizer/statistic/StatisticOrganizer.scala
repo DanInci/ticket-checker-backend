@@ -4,7 +4,7 @@ import ticheck.organizer.statistic.impl.StatisticOrganizerImpl
 import ticheck.OrganizationID
 import ticheck.algebra.ticket._
 import ticheck.algebra.ticket.models.TicketStatistic
-import ticheck.algebra.user.models.auth.UserAuthCtx
+import ticheck.auth.models.UserAuthCtx
 import ticheck.effect.Sync
 
 /**

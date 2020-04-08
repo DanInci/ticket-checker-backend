@@ -19,4 +19,7 @@ package object auth {
   object JWTTokenExpirationDuration extends PhantomType[FiniteDuration]
   type JWTTokenExpirationDuration = JWTTokenExpirationDuration.Type
 
+  object PlainTextPassword extends PhantomType[String]
+  type PlainTextPassword = PlainTextPassword.Type
+
 }

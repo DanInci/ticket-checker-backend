@@ -1,5 +1,6 @@
-package ticheck.algebra.user.models
+package ticheck.organizer.user.models
 
+import ticheck.algebra.user.models.UserProfile
 import ticheck.auth.JWTAuthToken
 
 /**
@@ -8,14 +9,13 @@ import ticheck.auth.JWTAuthToken
   * @since 4/8/2020
   *
   */
-final case class UserLoginResponse(
+final case class LoginResponse(
   token:   JWTAuthToken,
   profile: UserProfile,
 )
 
-object UserLoginResponse {
+object LoginResponse {
   import ticheck.json._
 
-  implicit val jsonCodec: Codec[UserLoginResponse] = derive.codec[UserLoginResponse]
-
+  implicit val jsonCodec: Codec[LoginResponse] = derive.codec[LoginResponse]
 }

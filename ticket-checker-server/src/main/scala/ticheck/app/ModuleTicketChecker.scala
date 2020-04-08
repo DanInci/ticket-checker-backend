@@ -4,6 +4,7 @@ import org.http4s.HttpRoutes
 import ticheck.algebra.organization.ModuleOrganizationAlgebra
 import ticheck.algebra.ticket.ModuleTicketAlgebra
 import ticheck.algebra.user.ModuleUserAlgebra
+import ticheck.auth.ModuleAuthAlgebra
 import ticheck.dao.organization.ModuleOrganizationDAO
 import ticheck.dao.organization.invite.ModuleOrganizationInviteDAO
 import ticheck.dao.organization.membership.ModuleOrganizationMembershipDAO
@@ -23,7 +24,8 @@ import ticheck.time.{ModuleTimeAlgebra, TimeConfig}
 trait ModuleTicketChecker[F[_]]
     extends ModuleTicketCheckerRest[F] with ModuleOrganizationAlgebra[F] with ModuleOrganizationDAO[F]
     with ModuleOrganizationMembershipDAO[F] with ModuleOrganizationInviteDAO[F] with ModuleTicketAlgebra[F]
-    with ModuleTicketDAO[F] with ModuleUserAlgebra[F] with ModuleUserDAO[F] with ModuleTimeAlgebra[F] {
+    with ModuleTicketDAO[F] with ModuleAuthAlgebra[F] with ModuleUserAlgebra[F] with ModuleUserDAO[F]
+    with ModuleTimeAlgebra[F] {
 
   override protected def transactor: Transactor[F]
 
@@ -41,9 +43,8 @@ trait ModuleTicketChecker[F[_]]
 
   private lazy val authCtxMiddleware: F[UserCtxMiddleware[F]] =
     for {
-      uma            <- userModuleAlgebra
-      oma            <- organizationModuleAlgebra
-      authMiddleware <- UserAuthedHttp4s.sync[F](allConfigs.jwtAuthConfig, uma, oma)(S)
+      aa             <- authAlgebra
+      authMiddleware <- UserAuthedHttp4s.sync[F](allConfigs.jwtAuthConfig, aa)(S)
     } yield authMiddleware
 
   private lazy val _serverRoutes: F[HttpRoutes[F]] =

@@ -1,11 +1,13 @@
 package ticheck.organizer.user.impl
 
 import ticheck.UserID
-import ticheck.effect._
 import ticheck.algebra.user.UserAlgebra
-import ticheck.algebra.user.models.auth.UserAuthCtx
+import ticheck.auth.models.UserAuthCtx
 import ticheck.algebra.user.models._
+import ticheck.auth.AuthAlgebra
+import ticheck.auth.models.{LoginRequest, RegistrationRequest}
 import ticheck.organizer.user.UserOrganizer
+import ticheck.organizer.user.models.LoginResponse
 
 /**
   *
@@ -14,12 +16,13 @@ import ticheck.organizer.user.UserOrganizer
   *
   */
 final private[user] class UserOrganizerImpl[F[_]](
+  private val authAlgebra: AuthAlgebra[F],
   private val userAlgebra: UserAlgebra[F],
 ) extends UserOrganizer[F] {
 
-  override def register(regData: UserRegistration): F[Unit] = ???
+  override def register(regData: RegistrationRequest): F[Unit] = ???
 
-  override def login(loginData: UserLoginRequest): F[UserLoginResponse] = ???
+  override def login(loginData: LoginRequest): F[LoginResponse] = ???
 
   override def getUserProfile(id: UserID)(implicit ctx: UserAuthCtx): F[UserProfile] = ???
 

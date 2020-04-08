@@ -18,7 +18,7 @@ final private[user] class UserAlgebraImpl[F[_]] private (
 )(implicit F: Async[F], transactor: Transactor[F])
     extends UserAlgebra[F] with DBOperationsAlgebra[F] {
 
-  override def getById(id: UserID): F[UserProfile] = ???
+  override def getProfileById(id: UserID): F[UserProfile] = ???
 
 }
 

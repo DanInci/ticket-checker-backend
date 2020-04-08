@@ -3,7 +3,7 @@ package ticheck.organizer.statistic.impl
 import ticheck.OrganizationID
 import ticheck.algebra.ticket.models.TicketStatistic
 import ticheck.algebra.ticket._
-import ticheck.algebra.user.models.auth.UserAuthCtx
+import ticheck.auth.models.UserAuthCtx
 import ticheck.organizer.statistic.StatisticOrganizer
 
 /**

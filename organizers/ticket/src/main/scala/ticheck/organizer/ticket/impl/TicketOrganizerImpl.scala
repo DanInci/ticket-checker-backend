@@ -3,7 +3,7 @@ package ticheck.organizer.ticket.impl
 import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
 import ticheck.algebra.ticket.{TicketAlgebra, TicketCategory}
 import ticheck.algebra.ticket.models.{Ticket, TicketDefinition, TicketList, TicketUpdateDefinition}
-import ticheck.algebra.user.models.auth.UserAuthCtx
+import ticheck.auth.models.UserAuthCtx
 import ticheck.organizer.ticket.TicketOrganizer
 
 /**

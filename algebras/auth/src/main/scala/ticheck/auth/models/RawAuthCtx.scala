@@ -1,4 +1,4 @@
-package ticheck.algebra.user.models.auth
+package ticheck.auth.models
 
 import ticheck.auth.AuthCtx
 import ticheck.{OrganizationID, UserID}

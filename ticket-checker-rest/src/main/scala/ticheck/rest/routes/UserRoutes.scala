@@ -4,7 +4,8 @@ import io.chrisdavenport.fuuid.http4s.FUUIDVar
 import org.http4s.HttpRoutes
 import org.http4s.dsl.Http4sDsl
 import ticheck.UserID
-import ticheck.algebra.user.models.{UserDefinition, UserLoginRequest, UserRegistration}
+import ticheck.algebra.user.models.UserDefinition
+import ticheck.auth.models.{LoginRequest, RegistrationRequest}
 import ticheck.effect._
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.rest._
@@ -45,14 +46,14 @@ final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserO
   private val registerLoginRoutes: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ POST -> Root / "register" =>
       for {
-        regData <- req.as[UserRegistration]
+        regData <- req.as[RegistrationRequest]
         _       <- userOrganizer.register(regData)
         resp    <- Created()
       } yield resp
 
     case req @ POST -> Root / "login" =>
       for {
-        loginData     <- req.as[UserLoginRequest]
+        loginData     <- req.as[LoginRequest]
         loginResponse <- userOrganizer.login(loginData)
         resp          <- Ok(loginResponse)
       } yield resp

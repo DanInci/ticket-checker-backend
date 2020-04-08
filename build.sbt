@@ -98,11 +98,13 @@ lazy val `organizer-user` = organizerModule("user")
   .settings(commonSettings)
   .dependsOn(
     `algebra-user`,
+    `algebra-auth`,
     `util-core`,
     `util-http`,
   )
   .aggregate(
     `algebra-user`,
+    `algebra-auth`,
     `util-core`,
     `util-http`,
   )
@@ -111,13 +113,13 @@ lazy val `organizer-ticket` = organizerModule("ticket")
   .settings(commonSettings)
   .dependsOn(
     `algebra-ticket`,
-    `algebra-user`,
+    `algebra-auth`,
     `util-core`,
     `util-http`,
   )
   .aggregate(
     `algebra-ticket`,
-    `algebra-user`,
+    `algebra-auth`,
     `util-core`,
     `util-http`,
   )
@@ -126,13 +128,13 @@ lazy val `organizer-organization` = organizerModule("organization")
   .settings(commonSettings)
   .dependsOn(
     `algebra-organization`,
-    `algebra-user`,
+    `algebra-auth`,
     `util-core`,
     `util-http`,
   )
   .aggregate(
     `algebra-organization`,
-    `algebra-user`,
+    `algebra-auth`,
     `util-core`,
     `util-http`,
   )
@@ -141,13 +143,13 @@ lazy val `organizer-statistic` = organizerModule("statistic")
   .settings(commonSettings)
   .dependsOn(
     `algebra-ticket`,
-    `algebra-user`,
+    `algebra-auth`,
     `util-core`,
     `util-http`,
   )
   .aggregate(
     `algebra-ticket`,
-    `algebra-user`,
+    `algebra-auth`,
     `util-core`,
     `util-http`,
   )
@@ -163,9 +165,13 @@ def algebraModule(name: String): Project = Project(s"algebra-$name", file(s"alge
 lazy val `algebra-auth` = algebraModule("auth")
   .settings(commonSettings)
   .dependsOn(
+    `dao-user`,
+    `util-db`,
     `util-core`,
   )
   .aggregate(
+    `dao-user`,
+    `util-db`,
     `util-core`,
   )
   .settings(
@@ -199,12 +205,10 @@ lazy val `algebra-ticket` = algebraModule("ticket")
 lazy val `algebra-user` = algebraModule("user")
   .settings(commonSettings)
   .dependsOn(
-    `algebra-auth`,
     `dao-user`,
     `util-core`,
   )
   .aggregate(
-    `algebra-auth`,
     `dao-user`,
     `util-core`,
   )

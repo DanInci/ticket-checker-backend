@@ -3,7 +3,7 @@ package ticheck.organizer.organization
 import ticheck.{OrganizationID, OrganizationInviteID, PagingInfo, UserID}
 import ticheck.algebra.organization.OrganizationAlgebra
 import ticheck.algebra.organization.models._
-import ticheck.algebra.user.models.auth.UserAuthCtx
+import ticheck.auth.models.UserAuthCtx
 import ticheck.dao.organization.invite.InviteCode
 import ticheck.effect.Sync
 
