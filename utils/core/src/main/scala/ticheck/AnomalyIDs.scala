@@ -28,4 +28,8 @@ object AnomalyIDs {
   //--------------------------- ORGANIZATION INVITE DAO -------------------------------
   case object InvalidInviteStatusID extends AnomalyID { override val name: String = "IV_INV_STATUS" }
 
+  //------------------------------- TICKET ALGEBRA ---------------------------------------
+  case object InvalidTicketCategoryID extends AnomalyID { override val name: String = "IV_TICKET_CAT" }
+  case object InvalidIntervalTypeID   extends AnomalyID { override val name: String = "IV_INTERVAL_TYP" }
+
 }

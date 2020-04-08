@@ -19,4 +19,6 @@ trait ModuleTicketAlgebra[F[_]] { this: ModuleTicketDAO[F] with ModuleTimeAlgebr
 
   def ticketAlgebra: F[TicketAlgebra[F]] = ???
 
+  def ticketStatisticsAlgebra: F[TicketStatisticsAlgebra[F]] = ???
+
 }

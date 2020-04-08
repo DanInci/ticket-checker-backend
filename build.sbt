@@ -186,10 +186,12 @@ lazy val `algebra-auth-http` = algebraModule("auth-http")
 lazy val `algebra-ticket` = algebraModule("ticket")
   .settings(commonSettings)
   .dependsOn(
+    `algebra-user`,
     `dao-ticket`,
     `util-core`,
   )
   .aggregate(
+    `algebra-user`,
     `dao-ticket`,
     `util-core`,
   )

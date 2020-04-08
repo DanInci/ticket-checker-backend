@@ -2,13 +2,12 @@ package ticheck.http
 
 import java.time.LocalDateTime
 
-import ticheck.PhantomType
+import ticheck.{FUUID, PhantomType, _}
 import io.chrisdavenport.fuuid.FUUID
 import org.http4s.{ParseFailure, QueryParamDecoder, QueryParameterValue}
 import shapeless.tag.@@
 import ticheck.time.TimeFormatters
 import ticheck.effect._
-import ticheck._
 
 import scala.util.Try
 
@@ -19,6 +18,9 @@ import scala.util.Try
   *
   */
 trait RoutesHelpers {
+
+  implicit def userIdQueryParamMatcher[F[_]]: QueryParamDecoder[UserID] =
+    phantomTypeQueryParamDecoder[F, FUUID, UserID.Tag]
 
   implicit val pageOffsetQueryParamDecoder: QueryParamDecoder[PageNumber] =
     QueryParamDecoder.intQueryParamDecoder.map(PageNumber.apply)
