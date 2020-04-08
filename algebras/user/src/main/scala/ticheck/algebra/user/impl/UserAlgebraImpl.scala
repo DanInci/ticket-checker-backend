@@ -1,7 +1,7 @@
 package ticheck.algebra.user.impl
 
-import ticheck.UserID
-import ticheck.algebra.user.models.UserProfile
+import ticheck.{Email, UserID}
+import ticheck.algebra.user.models.{UserDefinition, UserProfile}
 import ticheck.algebra.user.{UserAlgebra, UserModuleAlgebra}
 import ticheck.dao.user.UserSQL
 import ticheck.effect._
@@ -19,6 +19,12 @@ final private[user] class UserAlgebraImpl[F[_]] private (
     extends UserAlgebra[F] with DBOperationsAlgebra[F] {
 
   override def getProfileById(id: UserID): F[UserProfile] = ???
+
+  override def getProfileByEmail(email: Email): F[UserProfile] = ???
+
+  override def updateById(id: UserID, definition: UserDefinition): F[UserProfile] = ???
+
+  override def deleteById(id: UserID): F[Unit] = ???
 
 }
 

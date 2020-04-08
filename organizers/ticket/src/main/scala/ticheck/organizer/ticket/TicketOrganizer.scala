@@ -1,7 +1,7 @@
 package ticheck.organizer.ticket
 
 import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
-import ticheck.algebra.ticket.{TicketAlgebra, TicketCategory}
+import ticheck.algebra.ticket.{IsValidated, TicketAlgebra, TicketCategory}
 import ticheck.algebra.ticket.models._
 import ticheck.auth.models.UserAuthCtx
 import ticheck.effect.Sync
@@ -30,7 +30,7 @@ trait TicketOrganizer[F[_]] {
     implicit ctx:         UserAuthCtx,
   ): F[Ticket]
 
-  def setTicketValidationStatus(orgId: OrganizationID, ticketID: TicketID, isValid: Boolean)(
+  def setTicketValidationStatus(orgId: OrganizationID, ticketID: TicketID, isValidated: IsValidated)(
     implicit ctx:                      UserAuthCtx,
   ): F[Ticket]
 

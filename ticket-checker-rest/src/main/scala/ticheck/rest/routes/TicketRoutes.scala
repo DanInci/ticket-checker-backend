@@ -6,7 +6,7 @@ import ticheck.effect._
 import ticheck.rest._
 import ticheck.http._
 import org.http4s.dsl.Http4sDsl
-import ticheck.algebra.ticket.TicketCategory
+import ticheck.algebra.ticket.{IsValidated, TicketCategory}
 import ticheck.algebra.ticket.models.{TicketDefinition, TicketUpdateDefinition}
 import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
@@ -69,14 +69,22 @@ final private[rest] case class TicketRoutes[F[_]](private val ticketOrganizer: T
     case POST -> Root / `organizations-route` / FUUIDVar(oid) / `tickets-route` / ticketId / "validate" as user =>
       for {
         ticket <- ticketOrganizer
-          .setTicketValidationStatus(OrganizationID.spook(oid), TicketID.spook(ticketId), isValid = true)(user)
+          .setTicketValidationStatus(
+            OrganizationID.spook(oid),
+            TicketID.spook(ticketId),
+            IsValidated.spook(true),
+          )(user)
         resp <- Ok(ticket)
       } yield resp
 
     case POST -> Root / `organizations-route` / FUUIDVar(oid) / `tickets-route` / ticketId / "invalidate" as user =>
       for {
         ticket <- ticketOrganizer
-          .setTicketValidationStatus(OrganizationID.spook(oid), TicketID.spook(ticketId), isValid = false)(user)
+          .setTicketValidationStatus(
+            OrganizationID.spook(oid),
+            TicketID.spook(ticketId),
+            IsValidated.spook(false),
+          )(user)
         resp <- Ok(ticket)
       } yield resp
 

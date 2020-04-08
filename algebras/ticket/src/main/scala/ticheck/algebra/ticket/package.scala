@@ -14,6 +14,9 @@ package object ticket {
 
   type TicketModuleAlgebra[F[_]] = TicketAlgebra[F] with TicketStatisticsAlgebra[F]
 
+  object IsValidated extends PhantomType[Boolean]
+  type IsValidated = IsValidated.Type
+
   object StatisticsSize extends PhantomType[Int]
   type StatisticsSize = StatisticsSize.Type
 

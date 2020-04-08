@@ -1,6 +1,6 @@
 package ticheck.auth.models
 
-import ticheck.{Email, Name, OrganizationID, UserID}
+import ticheck.{Email, Name, UserID}
 
 /**
   *
@@ -9,8 +9,8 @@ import ticheck.{Email, Name, OrganizationID, UserID}
   *
   */
 final case class UserAuthCtx(
-  userId:          UserID,
-  email:           Email,
-  name:            Name,
-  organizationIds: List[OrganizationID],
+  userId:        UserID,
+  email:         Email,
+  name:          Name,
+  organizations: List[OrganizationAuthCtx],
 )

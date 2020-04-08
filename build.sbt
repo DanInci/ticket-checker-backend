@@ -165,11 +165,15 @@ def algebraModule(name: String): Project = Project(s"algebra-$name", file(s"alge
 lazy val `algebra-auth` = algebraModule("auth")
   .settings(commonSettings)
   .dependsOn(
+    `dao-organization-membership`,
+    `dao-organization`,
     `dao-user`,
     `util-db`,
     `util-core`,
   )
   .aggregate(
+    `dao-organization-membership`,
+    `dao-organization`,
     `dao-user`,
     `util-db`,
     `util-core`,

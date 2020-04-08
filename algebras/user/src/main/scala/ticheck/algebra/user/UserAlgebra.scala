@@ -1,7 +1,7 @@
 package ticheck.algebra.user
 
-import ticheck.UserID
-import ticheck.algebra.user.models.UserProfile
+import ticheck.{Email, UserID}
+import ticheck.algebra.user.models.{UserDefinition, UserProfile}
 
 /**
   *
@@ -12,5 +12,11 @@ import ticheck.algebra.user.models.UserProfile
 trait UserAlgebra[F[_]] {
 
   def getProfileById(id: UserID): F[UserProfile]
+
+  def getProfileByEmail(email: Email): F[UserProfile]
+
+  def updateById(id: UserID, definition: UserDefinition): F[UserProfile]
+
+  def deleteById(id: UserID): F[Unit]
 
 }
