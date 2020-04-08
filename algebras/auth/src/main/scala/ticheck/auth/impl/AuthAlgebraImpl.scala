@@ -68,7 +68,7 @@ final private[auth] class AuthAlgebraImpl[F[_]] private (
   private def checkRegistrationData(regData: RegistrationRequest): ConnectionIO[Unit] =
     for {
       _ <- regData.password
-        .matches("(?=^.{6,}$)((?=.*\\d)|(?=.*\\W+))(?=.*[A-Z])(?=.*[a-z]).*$")
+        .matches("(?=^.{6,}$)(?=.*[A-Z])(?=.*[a-z]).*$")
         .pure[ConnectionIO]
         .ifFalseRaise(PasswordDoesNotMeetCriteriaAnomaly)
       _ <- userSQL.findByEmail(regData.email).ifSomeRaise(EmailAlreadyRegisteredAnomaly(regData.email))
