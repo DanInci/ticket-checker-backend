@@ -1,7 +1,7 @@
 package ticheck.auth.impl
 
-import ticheck.auth.{AuthAlgebra, JWTAuthToken}
-import ticheck.auth.models.{LoginRequest, RawAuthCtx, RegistrationRequest, UserAuthCtx}
+import ticheck.auth._
+import ticheck.auth.models._
 import ticheck.dao.user.UserSQL
 import ticheck.db._
 import ticheck.effect._

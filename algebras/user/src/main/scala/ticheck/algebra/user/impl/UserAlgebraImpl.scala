@@ -1,8 +1,8 @@
 package ticheck.algebra.user.impl
 
-import ticheck.{Email, UserID}
-import ticheck.algebra.user.models.{UserDefinition, UserProfile}
-import ticheck.algebra.user.{UserAlgebra, UserModuleAlgebra}
+import ticheck._
+import ticheck.algebra.user.models._
+import ticheck.algebra.user._
 import ticheck.dao.user.UserSQL
 import ticheck.effect._
 import ticheck.db._

@@ -1,17 +1,8 @@
 package ticheck.algebra.ticket.impl
 
-import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
-import ticheck.algebra.ticket.models.{Ticket, TicketDefinition, TicketList, TicketStatistic, TicketUpdateDefinition}
-import ticheck.algebra.ticket.{
-  IntervalType,
-  IsValidated,
-  StatisticsSize,
-  StatisticsTimestamp,
-  TicketAlgebra,
-  TicketCategory,
-  TicketModuleAlgebra,
-  TicketStatisticsAlgebra,
-}
+import ticheck._
+import ticheck.algebra.ticket.models._
+import ticheck.algebra.ticket._
 import ticheck.dao.ticket.TicketSQL
 import ticheck.effect._
 import ticheck.db._
