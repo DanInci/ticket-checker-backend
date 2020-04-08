@@ -1,6 +1,6 @@
 package ticheck.dao.user.impl
 
-import ticheck.UserID
+import ticheck.{Email, UserID}
 import ticheck.effect._
 import ticheck.dao.user.models.UserRecord
 import ticheck.dao.user._
@@ -15,6 +15,11 @@ import ticheck.time.TimeAlgebra
   */
 final private[user] class UserSQLImpl private (override val timeAlgebra: TimeAlgebra)
     extends UserSQL[ConnectionIO] with UserComposites {
+
+  override def findByEmail(email: Email): ConnectionIO[Option[UserRecord]] =
+    sql"""SELECT "id", "email", "hashed_password", "name", "created_at", "edited_at"
+         | FROM "user"
+         | WHERE "email"=$email""".stripMargin.query[UserRecord].option
 
   override def find(pk: UserID): ConnectionIO[Option[UserRecord]] =
     sql"""SELECT "id", "email", "hashed_password", "name", "created_at", "edited_at"

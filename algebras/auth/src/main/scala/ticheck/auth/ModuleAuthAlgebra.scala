@@ -1,8 +1,10 @@
 package ticheck.auth
 
+import ticheck.dao.organization.membership.ModuleOrganizationMembershipDAO
 import ticheck.dao.user.ModuleUserDAO
 import ticheck.effect._
 import ticheck.db.Transactor
+import ticheck.time.ModuleTimeAlgebra
 
 /**
   *
@@ -10,18 +12,23 @@ import ticheck.db.Transactor
   * @since 4/8/2020
   *
   */
-trait ModuleAuthAlgebra[F[_]] { this: ModuleUserDAO[F] =>
+trait ModuleAuthAlgebra[F[_]] {
+  this: ModuleUserDAO[F] with ModuleOrganizationMembershipDAO[F] with ModuleTimeAlgebra[F] =>
 
   implicit protected def F: Async[F]
 
   implicit protected def transactor: Transactor[F]
 
+  protected def authConfig: JWTAuthConfig
+
   def authAlgebra: F[AuthAlgebra[F]] = _authAlgebra
 
   private lazy val _authAlgebra: F[AuthAlgebra[F]] =
     for {
-      usql <- userSQL
-      au   <- impl.AuthAlgebraImpl.async(usql)
+      ta    <- timeAlgebra
+      usql  <- userSQL
+      omsql <- organizationMembershipSQL
+      au    <- impl.AuthAlgebraImpl.async(authConfig, ta, usql, omsql)
     } yield au
 
 }

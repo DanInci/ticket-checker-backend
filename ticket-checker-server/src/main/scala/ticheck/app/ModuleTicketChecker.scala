@@ -4,7 +4,7 @@ import org.http4s.HttpRoutes
 import ticheck.algebra.organization.ModuleOrganizationAlgebra
 import ticheck.algebra.ticket.ModuleTicketAlgebra
 import ticheck.algebra.user.ModuleUserAlgebra
-import ticheck.auth.ModuleAuthAlgebra
+import ticheck.auth.{JWTAuthConfig, ModuleAuthAlgebra}
 import ticheck.dao.organization.ModuleOrganizationDAO
 import ticheck.dao.organization.invite.ModuleOrganizationInviteDAO
 import ticheck.dao.organization.membership.ModuleOrganizationMembershipDAO
@@ -38,6 +38,8 @@ trait ModuleTicketChecker[F[_]]
   protected def allConfigs: AllConfigs
 
   override protected def timeConfig: TimeConfig = allConfigs.timeConfig
+
+  override protected def authConfig: JWTAuthConfig = allConfigs.jwtAuthConfig
 
   def serverRoutes: F[HttpRoutes[F]] = _serverRoutes
 

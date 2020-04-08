@@ -10,4 +10,8 @@ import ticheck.db._
   * @since 4/6/2020
   *
   */
-trait UserSQL[H[_]] extends DAOAlgebra[H, UserRecord, UserID]
+trait UserSQL[H[_]] extends DAOAlgebra[H, UserRecord, UserID] {
+
+  def findByEmail(email: Email): ConnectionIO[Option[UserRecord]]
+
+}
