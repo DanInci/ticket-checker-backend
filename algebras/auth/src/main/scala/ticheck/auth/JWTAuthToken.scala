@@ -4,9 +4,9 @@ import cats.Show
 
 import ticheck.effect._
 import ticheck.json._
+import io.circe.parser._
 
-import tsec.jwt._
-import tsec.jws.mac._
+import pdi.jwt._
 
 /**
   *
@@ -22,7 +22,8 @@ sealed trait JWTAuthToken {
 
 object JWTAuthToken {
 
-  private val AuthCtxCustomClaimField = "authCtx"
+  //convenience, for easy upgrading later on
+  private val Algo = JwtAlgorithm.HS384
 
   /**
     * Overload of [[create(SharedSecretKey, JWTTokenExpirationDuration)]]
@@ -37,15 +38,15 @@ object JWTAuthToken {
     * And a custom ``authCtx`` claim which contains the information
     * about the user given in [[AuthCtx]]
     */
-  def create[F[_]: Sync, T <: AuthCtx](key: SharedSecretKey, expiresAfter: JWTTokenExpirationDuration)(
-    authCtx:         T,
-  )(implicit encode: Encoder[T]): F[JWTAuthToken] = {
+  def create[F[_], T <: AuthCtx](key: SharedSecretKey, expiresAfter: JWTTokenExpirationDuration)(
+    authCtx:                          T,
+  )(implicit encode:                  Encoder[T], F: Sync[F]): F[JWTAuthToken] = {
     for {
-      claims <- JWTClaims.withDuration(
-        expiration   = Option(expiresAfter),
-        customFields = Seq((AuthCtxCustomClaimField, encode(authCtx))),
-      )
-      jwtStr <- JWTMac.buildToString[F, key.SigningAlg](claims, key.signingKey)
+      claims <- JwtClaim(
+        expiration = Option(expiresAfter.toMillis),
+        content    = encode(authCtx).noSpacesSortKeys,
+      ).pure[F]
+      jwtStr <- F.delay(JwtCirce.encode(claims, key.signingKey, Algo))
     } yield JWTAuthTokenImpl(jwtStr)
   }
 
@@ -60,16 +61,22 @@ object JWTAuthToken {
   /**
     * The inverse of [[create]]
     */
-  def verifyAndParseRaw[F[_]: Sync, T <: AuthCtx](
+  def verifyAndParseRaw[F[_], T <: AuthCtx](
     key: SharedSecretKey,
-  )(jwt: String)(implicit decode: Decoder[T]): F[T] = {
+  )(jwt: String)(implicit decode: Decoder[T], F: Sync[F]): F[T] = {
     for {
-      jwt <- JWTMac.verifyAndParse[F, key.SigningAlg](jwt, key.signingKey).adaptError {
+      _ <- F.delay(Jwt.validate(jwt, key.signingKey, Seq(Algo))).adaptError {
         case NonFatal(_) => JWTVerificationAnomaly
       }
-      ctx <- jwt.body.getCustomF[F, T](AuthCtxCustomClaimField).adaptError {
-        case NonFatal(e) => JWTAuthCtxMalformedAnomaly(e.getMessage)
-      }
+      ctx <- JwtCirce
+        .decode(jwt, key.signingKey, Seq(Algo))
+        .toEither
+        .flatMap(c => parse(c.content))
+        .flatMap(j => decode.decodeJson(j))
+        .liftTo[F]
+        .adaptError {
+          case NonFatal(e) => JWTAuthCtxMalformedAnomaly(e.getMessage)
+        }
     } yield ctx
   }
 

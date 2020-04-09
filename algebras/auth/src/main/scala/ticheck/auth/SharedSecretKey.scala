@@ -3,7 +3,6 @@ package ticheck.auth
 import java.nio.charset
 
 import ticheck.effect._
-import tsec.mac.jca._
 
 /**
   *
@@ -12,21 +11,12 @@ import tsec.mac.jca._
   *
   */
 trait SharedSecretKey {
-  final type SigningAlg = SharedSecretKey.Algo
-  final type SigningKey = MacSigningKey[SigningAlg]
-
   def signingKey: SigningKey
 }
 
 object SharedSecretKey {
 
-  //convenience, for easy upgrading later on
-  private type Algo = HMACSHA384
-  private val Algo = HMACSHA384
-
-  def apply(key: MacSigningKey[Algo]): SharedSecretKey = new SharedSecretKeyImpl(key)
-
-  def generateKey[F[_]: Sync]: F[SharedSecretKey] = Algo.generateKey[F].map(this.apply)
+  def apply(key: SigningKey): SharedSecretKey = new SharedSecretKeyImpl(key)
 
   /**
     *
@@ -58,7 +48,7 @@ object SharedSecretKey {
     *   The shared secret represented as a byte encoded UTF-8 String
     */
   def fromRawBytes[F[_]: Sync](raw: RawBytesSharedSecretKey): F[SharedSecretKey] =
-    Algo.buildKey[F](raw).map(this.apply)
+    Sync[F].delay(SigningKey.spook(raw.map(_.toChar).mkString)).map(this.apply)
 
   /**
     * Recommended way of storing and transmitting shared secrets through
@@ -68,9 +58,9 @@ object SharedSecretKey {
     *   The shared secret represented as a byte encoded UTF-8 String
     */
   def fromRawBytesUnsafe[F[_]](raw: RawBytesSharedSecretKey): SharedSecretKey =
-    this.apply(Algo.unsafeBuildKey(raw))
+    this.apply(SigningKey.spook(raw.map(_.toChar).mkString))
 
   final private class SharedSecretKeyImpl private[SharedSecretKey] (
-    private val key: MacSigningKey[Algo],
+    private val key: SigningKey,
   ) extends SharedSecretKey { override val signingKey: SigningKey = key }
 }

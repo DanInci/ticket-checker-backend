@@ -179,7 +179,7 @@ lazy val `algebra-auth` = algebraModule("auth")
     `util-core`,
   )
   .settings(
-    libraryDependencies ++= Libraries.tsecJWT ++ Seq(Libraries.tsecPassword, Libraries.tsecCipherJCA, Libraries.tsecHashJCA)
+    libraryDependencies ++= Libraries.jwtPlusCrypto
   )
 
 lazy val `algebra-auth-http` = algebraModule("auth-http")

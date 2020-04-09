@@ -10,6 +10,9 @@ import scala.concurrent.duration.FiniteDuration
   */
 package object auth {
 
+  object SigningKey extends PhantomType[String]
+  type SigningKey = SigningKey.Type
+
   object RawBytesSharedSecretKey extends PhantomType[Array[Byte]]
   type RawBytesSharedSecretKey = RawBytesSharedSecretKey.Type
 
