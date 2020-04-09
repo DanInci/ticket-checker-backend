@@ -3,9 +3,12 @@ package ticheck.algebra.user.impl
 import ticheck._
 import ticheck.algebra.user.models._
 import ticheck.algebra.user._
-import ticheck.dao.user.UserSQL
+import ticheck.dao.organization.membership.{OrganizationMembershipSQL, OrganizationRole}
+import ticheck.dao.user.{EditedAt, UserSQL}
+import ticheck.dao.user.models.UserRecord
 import ticheck.effect._
 import ticheck.db._
+import ticheck.time.TimeAlgebra
 
 /**
   *
@@ -14,23 +17,71 @@ import ticheck.db._
   *
   */
 final private[user] class UserAlgebraImpl[F[_]] private (
-  userSQL:    UserSQL[ConnectionIO],
-)(implicit F: Async[F], transactor: Transactor[F])
+  timeAlgebra:               TimeAlgebra,
+  userSQL:                   UserSQL[ConnectionIO],
+  organizationMembershipSQL: OrganizationMembershipSQL[ConnectionIO],
+)(implicit F:                Async[F], transactor: Transactor[F])
     extends UserAlgebra[F] with DBOperationsAlgebra[F] {
 
-  override def getProfileById(id: UserID): F[UserProfile] = ???
+  override def getProfileById(id: UserID): F[UserProfile] = transact {
+    for {
+      userDAO <- userSQL.find(id).flattenOption(new UserNFA(id))
+    } yield UserProfile.fromDAO(userDAO)
+  }
 
-  override def getProfileByEmail(email: Email): F[UserProfile] = ???
+  override def getProfileByEmail(email: Email): F[UserProfile] = transact {
+    for {
+      userDAO <- userSQL.findByEmail(email).flattenOption(new UserNFA(email))
+    } yield UserProfile.fromDAO(userDAO)
+  }
 
-  override def updateById(id: UserID, definition: UserDefinition): F[UserProfile] = ???
+  override def updateById(id: UserID, definition: UserDefinition): F[UserProfile] = transact {
+    for {
+      currentUserDAO <- checkUserUpdate(id, definition)
+      now            <- timeAlgebra.now[ConnectionIO].map(EditedAt.spook)
+      newUserDAO = currentUserDAO.copy(name = definition.name, editedAt = Some(now))
+    } yield UserProfile.fromDAO(newUserDAO)
+  }
 
-  override def deleteById(id: UserID): F[Unit] = ???
+  override def deleteById(id: UserID): F[Unit] = transact {
+    for {
+      _ <- checkUserDelete(id)
+      _ <- userSQL.delete(id)
+    } yield ()
+  }
+
+  /*
+   * check if user with id exists
+   */
+  private def checkUserUpdate(id: UserID, definition: UserDefinition): ConnectionIO[UserRecord] =
+    for {
+      userDAO <- userSQL.find(id).flattenOption(new UserNFA(id))
+      _       <- definition.pure[ConnectionIO]
+    } yield userDAO
+
+  /*
+   * - check if user with id exists
+   * - check if user is not an organization owner
+   */
+  private def checkUserDelete(id: UserID): ConnectionIO[Unit] =
+    for {
+      _              <- userSQL.find(id).flattenOption(new UserNFA(id))
+      membershipDAOs <- organizationMembershipSQL.getByUserID(id)
+      _ <- membershipDAOs
+        .exists(_.role == OrganizationRole.OrganizationOwner)
+        .pure[ConnectionIO]
+        .ifTrueRaise(UserIsOrganizationOwnerCA(id))
+    } yield ()
 
 }
 
 private[user] object UserAlgebraImpl {
 
-  def async[F[_]: Async: Transactor](userSQL: UserSQL[ConnectionIO]): F[UserModuleAlgebra[F]] =
-    Async[F].pure(new UserAlgebraImpl[F](userSQL))
+  def async[F[_]: Async: Transactor](
+    timeAlgebra:               TimeAlgebra,
+    userSQL:                   UserSQL[ConnectionIO],
+    organizationMembershipSQL: OrganizationMembershipSQL[ConnectionIO],
+  ): F[UserModuleAlgebra[F]] =
+    Async[F].pure(new UserAlgebraImpl[F](timeAlgebra, userSQL, organizationMembershipSQL))
 
 }

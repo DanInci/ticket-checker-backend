@@ -23,13 +23,17 @@ object AnomalyIDs {
   case object JWTAuthCtxMalformedAnomalyID  extends AnomalyID { override val name: String = "IVJWTMAL" }
 
   //--------------------------- AUTH HTTP ---------------------------
-  case object MissingXAuthTokenHeaderID extends AnomalyID { override val name: String = "UA_MISSING_XAUTH_HEADER" }
+  case object MissingXAuthTokenHeaderID extends AnomalyID { override val name: String = "UA_MISSING_AUTH_HEADER" }
 
   //--------------------------- ORGANIZATION MEMBERSHIP DAO -------------------------------
   case object InvalidOrganizationRoleID extends AnomalyID { override val name: String = "IV_ORG_ROLE" }
 
   //--------------------------- ORGANIZATION INVITE DAO -------------------------------
   case object InvalidInviteStatusID extends AnomalyID { override val name: String = "IV_INV_STATUS" }
+
+  //-------------------------------- USER ALGEBRA ----------------------------------------
+  case object UserNotFoundID            extends AnomalyID { override val name: String = "USER_NFA_01" }
+  case object UserIsOrganizationOwnerID extends AnomalyID { override val name: String = "USER_CA_02" }
 
   //------------------------------- TICKET ALGEBRA ---------------------------------------
   case object InvalidTicketCategoryID extends AnomalyID { override val name: String = "IV_TICKET_CAT" }

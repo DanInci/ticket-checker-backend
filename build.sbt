@@ -209,10 +209,12 @@ lazy val `algebra-ticket` = algebraModule("ticket")
 lazy val `algebra-user` = algebraModule("user")
   .settings(commonSettings)
   .dependsOn(
+    `dao-organization-membership`,
     `dao-user`,
     `util-core`,
   )
   .aggregate(
+    `dao-organization-membership`,
     `dao-user`,
     `util-core`,
   )

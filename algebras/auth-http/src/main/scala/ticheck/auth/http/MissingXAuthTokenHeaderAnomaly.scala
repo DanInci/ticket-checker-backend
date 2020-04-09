@@ -8,6 +8,6 @@ import ticheck._
   * @since 4/1/2020
   *
   */
-case object MissingXAuthTokenHeaderAnomaly extends UnauthorizedAnomaly(s"No ${AuthedHttp4s.`X-Auth-Token`} provided") {
+case object MissingXAuthTokenHeaderAnomaly extends UnauthorizedAnomaly(s"No ${AuthedHttp4s.`Authorization`} provided") {
   override val id: AnomalyID = AnomalyIDs.MissingXAuthTokenHeaderID
 }

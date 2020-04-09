@@ -29,12 +29,12 @@ trait AuthedHttp4s[F[_], T <: AuthCtx, HT] {
 
   private def verifyToken(config: JWTAuthConfig)(implicit decode: Decoder[T]): Kleisli[F, Request[F], T] =
     Kleisli { req: Request[F] =>
-      val optHeader = req.headers.get(AuthedHttp4s.`X-Auth-Token`)
+      val optHeader = req.headers.get(AuthedHttp4s.`Authorization`)
       optHeader match {
         case None =>
           S.raiseError[T](MissingXAuthTokenHeaderAnomaly)
         case Some(header) =>
-          JWTAuthToken.verifyAndParseRaw[F, T](config.secretKey)(header.value)
+          JWTAuthToken.verifyAndParseRaw[F, T](config.secretKey)(header.value.stripPrefix("Bearer "))
       }
     }
 
@@ -50,7 +50,7 @@ trait AuthedHttp4s[F[_], T <: AuthCtx, HT] {
 
 object AuthedHttp4s {
 
-  private[auth] val `X-Auth-Token` = CaseInsensitiveString("X-AUTH-TOKEN")
+  private[auth] val `Authorization` = CaseInsensitiveString("Authorization")
   private val challenges: NonEmptyList[Challenge] = NonEmptyList.of(
     Challenge(
       scheme = "Bearer",
