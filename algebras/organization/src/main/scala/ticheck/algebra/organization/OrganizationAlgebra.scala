@@ -1,8 +1,8 @@
 package ticheck.algebra.organization
 
-import ticheck.{OrganizationID, OrganizationInviteID, PagingInfo, UserID}
+import ticheck.{Email, OrganizationID, OrganizationInviteID, PagingInfo, UserID}
 import ticheck.algebra.organization.models._
-import ticheck.dao.organization.invite.InviteCode
+import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
 
 /**
   *
@@ -14,7 +14,7 @@ trait OrganizationAlgebra[F[_]] {
 
   def getAll(filter: Option[List[OrganizationID]], pagingInfo: PagingInfo): F[List[OrganizationList]]
 
-  def create(definition: OrganizationDefinition): F[OrganizationProfile]
+  def create(definition: OrganizationDefinition)(implicit createdBy: UserID): F[OrganizationProfile]
 
   def getById(id: OrganizationID): F[OrganizationProfile]
 
@@ -26,7 +26,12 @@ trait OrganizationAlgebra[F[_]] {
 
   def cancelInvite(id: OrganizationID, inviteId: OrganizationInviteID): F[Unit]
 
-  def join(inviteCode: InviteCode): F[OrganizationProfile]
+  def join(inviteCode: InviteCode)(implicit userId: UserID, email: Email): F[OrganizationProfile]
+
+  def setInviteStatus(id: OrganizationID, inviteId: OrganizationInviteID, status: InviteStatus)(
+    implicit userId:      UserID,
+    email:                Email,
+  ): F[Unit]
 
   def getMembersList(id: OrganizationID, pagingInfo: PagingInfo): F[List[OrganizationMemberList]]
 

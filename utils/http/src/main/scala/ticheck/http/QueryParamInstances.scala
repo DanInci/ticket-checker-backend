@@ -11,7 +11,7 @@ import ticheck.{PageNumber, PageSize}
   */
 trait QueryParamInstances {
 
-  protected object PageOffsetMatcher extends OptionalQueryParamDecoderMatcher[PageNumber]("page")
-  protected object PageLimitMatcher  extends OptionalQueryParamDecoderMatcher[PageSize]("pageSize")
+  protected object PageNumberMatcher extends OptionalQueryParamDecoderMatcher[PageNumber]("page")
+  protected object PageSizeMatcher   extends OptionalQueryParamDecoderMatcher[PageSize]("pageSize")
 
 }

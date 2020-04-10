@@ -11,9 +11,9 @@ import ticheck.dao.organization.membership._
   */
 final case class OrganizationMembershipRecord(
   id:             OrganizationMembershipID,
-  organizationId: OrganizationID,
-  inviteId:       OrganizationInviteID,
   userId:         UserID,
+  organizationId: OrganizationID,
+  inviteId:       Option[OrganizationInviteID],
   role:           OrganizationRole,
   joinedAt:       JoinedAt,
 )

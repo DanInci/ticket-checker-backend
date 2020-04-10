@@ -15,6 +15,6 @@ final case class OrganizationInviteRecord(
   email:          Email,
   code:           InviteCode,
   status:         InviteStatus,
-  respondedAt:    RespondedAt,
+  answeredAt:     Option[AnsweredAt],
   invitedAt:      InvitedAt,
 )

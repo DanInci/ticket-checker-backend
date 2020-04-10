@@ -3,7 +3,7 @@ package ticheck.algebra.ticket.impl
 import ticheck._
 import ticheck.algebra.ticket.models._
 import ticheck.algebra.ticket._
-import ticheck.dao.ticket.TicketSQL
+import ticheck.dao.ticket.{TicketCategory, TicketSQL}
 import ticheck.effect._
 import ticheck.db._
 

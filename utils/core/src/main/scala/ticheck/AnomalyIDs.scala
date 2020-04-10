@@ -31,12 +31,24 @@ object AnomalyIDs {
   //--------------------------- ORGANIZATION INVITE DAO -------------------------------
   case object InvalidInviteStatusID extends AnomalyID { override val name: String = "IV_INV_STATUS" }
 
+  //---------------------------------- TICKET DAO -------------------------------------------
+  case object InvalidTicketCategoryID extends AnomalyID { override val name: String = "IV_TIC_CAT" }
+
   //-------------------------------- USER ALGEBRA ----------------------------------------
-  case object UserNotFoundID            extends AnomalyID { override val name: String = "USER_NFA_01" }
-  case object UserIsOrganizationOwnerID extends AnomalyID { override val name: String = "USER_CA_02" }
+  case object UserNotFoundID            extends AnomalyID { override val name: String = "USR_NFA_01" }
+  case object UserIsOrganizationOwnerID extends AnomalyID { override val name: String = "USR_CA_02" }
+
+  //------------------------------ ORGANIZATION ALGEBRA ----------------------------------------
+  case object OrganizationNotFoundID             extends AnomalyID { override val name: String = "ORG_NFA_01" }
+  case object OrganizationAlreadyExistsID        extends AnomalyID { override val name: String = "ORG_CA_02" }
+  case object OrganizationInviteNotFoundID       extends AnomalyID { override val name: String = "ORG_NFA_03" }
+  case object OrganizationInviteIsAnsweredID     extends AnomalyID { override val name: String = "ORG_CA_04" }
+  case object OrganizationInviteExistsID         extends AnomalyID { override val name: String = "ORG_CA_05" }
+  case object OrganizationMemberExistsID         extends AnomalyID { override val name: String = "ORG_CA_06" }
+  case object OrganizationMemberNotFoundID       extends AnomalyID { override val name: String = "ORG_NFA_07" }
+  case object OrganizationMemberRoleNotAllowedID extends AnomalyID { override val name: String = "ORG_IIA_08" }
 
   //------------------------------- TICKET ALGEBRA ---------------------------------------
-  case object InvalidTicketCategoryID extends AnomalyID { override val name: String = "IV_TICKET_CAT" }
-  case object InvalidIntervalTypeID   extends AnomalyID { override val name: String = "IV_INTERVAL_TYP" }
+  case object InvalidIntervalTypeID extends AnomalyID { override val name: String = "IV_INTERVAL_TYP" }
 
 }

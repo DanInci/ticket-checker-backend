@@ -1,6 +1,6 @@
 CREATE TABLE "organization" (
     "id"                UUID NOT NULL,
-    "owner_id"          UUID NULL,
+    "owner_id"          UUID NOT NULL,
     "name"              VARCHAR NOT NULL,
     "created_at"        TIMESTAMP NOT NULL
 );
@@ -11,7 +11,7 @@ CREATE TABLE "organization_invite" (
     "email"             VARCHAR NOT NULL,
     "code"              VARCHAR(10) NOT NULL,
     "status"            VARCHAR(10) NOT NULL,
-    "responded_at"      TIMESTAMP NOT NULL,
+    "answered_at"       TIMESTAMP NULL,
     "invited_at"        TIMESTAMP NOT NULL
 );
 
@@ -19,7 +19,7 @@ CREATE TABLE "organization_membership" (
     "id"                UUID NOT NULL,
     "organization_id"   UUID NOT NULL,
     "user_id"           UUID NOT NULL,
-    "invite_id"         UUID NOT NULL,
+    "invite_id"         UUID NULL,
     "role"              VARCHAR NOT NULL,
     "joined_at"         TIMESTAMP NOT NULL
 );
@@ -57,8 +57,11 @@ ALTER TABLE "organization" ADD CONSTRAINT organization_owner_id_fk FOREIGN KEY (
 ALTER TABLE "organization_invite" ADD CONSTRAINT organization_invite_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
 ALTER TABLE "organization_membership" ADD CONSTRAINT organization_membership_user_id_fk FOREIGN KEY ("user_id") REFERENCES "user" ("id") ON DELETE CASCADE;
 ALTER TABLE "organization_membership" ADD CONSTRAINT organization_membership_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
-ALTER TABLE "organization_membership" ADD CONSTRAINT organization_membership_invite_id_fk FOREIGN KEY ("invite_id") REFERENCES "organization_invite" ("id") ON DELETE CASCADE;
+ALTER TABLE "organization_membership" ADD CONSTRAINT organization_membership_invite_id_fk FOREIGN KEY ("invite_id") REFERENCES "organization_invite" ("id") ON DELETE SET NULL;
 
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_sold_by_id_fk FOREIGN KEY ("sold_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_validated_by_id_fk FOREIGN KEY ("validated_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
+
+CREATE UNIQUE INDEX CONCURRENTLY invitation_code ON "organization_invite" ("code");
+ALTER TABLE "organization_invite" ADD CONSTRAINT organization_invite_unique_code UNIQUE USING INDEX invitation_code;

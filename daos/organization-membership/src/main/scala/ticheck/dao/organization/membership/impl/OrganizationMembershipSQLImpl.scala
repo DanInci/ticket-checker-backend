@@ -1,7 +1,7 @@
 package ticheck.dao.organization.membership.impl
 
 import ticheck.effect._
-import ticheck.{OrganizationMembershipID, UserID}
+import ticheck.{Email, Limit, Offset, OrganizationID, OrganizationMembershipID, UserID}
 import ticheck.dao.organization.membership.OrganizationMembershipSQL
 import ticheck.dao.organization.membership.models.OrganizationMembershipRecord
 import ticheck.db._
@@ -15,6 +15,37 @@ import ticheck.time.TimeAlgebra
   */
 final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (override val timeAlgebra: TimeAlgebra)
     extends OrganizationMembershipSQL[ConnectionIO] with OrganizationMembershipComposites {
+
+  override def getAllForOrganization(
+    organizationId: OrganizationID,
+    offset:         Offset,
+    limit:          Limit,
+  ): ConnectionIO[List[OrganizationMembershipRecord]] =
+    sql"""SELECT "id", "user_id", "organization_id", "invite_id", "role", "joined_at"
+         | FROM "organization_membership"
+         | WHERE "organization_id"=$organizationId
+         | OFFSET $offset LIMIT $limit""".stripMargin.query[OrganizationMembershipRecord].to[List]
+
+  override def findForOrganizationByUserID(
+    organizationId: OrganizationID,
+    userId:         UserID,
+  ): ConnectionIO[Option[OrganizationMembershipRecord]] =
+    sql"""SELECT "id", "user_id", "organization_id", "invite_id", "role", "joined_at"
+         | FROM "organization_membership"
+         | WHERE "organization_id"=$organizationId AND "user_id"=$userId""".stripMargin
+      .query[OrganizationMembershipRecord]
+      .option
+
+  override def findForOrganizationByEmail(
+    organizationId: OrganizationID,
+    email:          Email,
+  ): ConnectionIO[Option[OrganizationMembershipRecord]] =
+    sql"""SELECT "om"."id", "om"."user_id", "om"."organization_id", "om"."invite_id", "om"."role", "om"."joined_at"
+         | FROM "organization_membership" "om"
+         | INNER JOIN "user" "u" ON "u"."id" = "om"."user_id"
+         | WHERE "om"."organization_id"=$organizationId AND "u"."email"=$email""".stripMargin
+      .query[OrganizationMembershipRecord]
+      .option
 
   override def getByUserID(userId: UserID): ConnectionIO[List[OrganizationMembershipRecord]] =
     sql"""SELECT "id", "user_id", "organization_id", "invite_id", "role", "joined_at"
@@ -55,7 +86,7 @@ final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (ove
 
   override def updateMany[M[_]](es: M[OrganizationMembershipRecord])(
     implicit evidence$1:            Traverse[M],
-  ): ConnectionIO[Unit] = ???
+  ): ConnectionIO[Unit] = es.traverse(update).void
 
   override def delete(pk: OrganizationMembershipID): ConnectionIO[Unit] =
     sql"""DELETE FROM "organization_membership" WHERE "id"=$pk""".update.run.void

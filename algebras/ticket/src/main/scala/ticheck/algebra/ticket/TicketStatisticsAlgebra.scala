@@ -2,6 +2,7 @@ package ticheck.algebra.ticket
 
 import ticheck.OrganizationID
 import ticheck.algebra.ticket.models.TicketStatistic
+import ticheck.dao.ticket.TicketCategory
 
 /**
   *

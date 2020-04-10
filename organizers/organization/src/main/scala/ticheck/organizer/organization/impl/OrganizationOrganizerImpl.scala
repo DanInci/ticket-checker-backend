@@ -4,7 +4,7 @@ import ticheck.{OrganizationID, OrganizationInviteID, PagingInfo, UserID}
 import ticheck.algebra.organization.OrganizationAlgebra
 import ticheck.algebra.organization.models._
 import ticheck.auth.models.UserAuthCtx
-import ticheck.dao.organization.invite.InviteCode
+import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
 import ticheck.organizer.organization.OrganizationOrganizer
 import ticheck.effect._
 
@@ -29,7 +29,7 @@ final private[organization] case class OrganizationOrganizerImpl[F[_]](
     implicit ctx:                               UserAuthCtx,
   ): F[OrganizationProfile] =
     for {
-      organization <- organizationAlgebra.create(definition)
+      organization <- organizationAlgebra.create(definition)(ctx.userId)
     } yield organization
 
   override def getOrganizationProfile(id: OrganizationID)(implicit ctx: UserAuthCtx): F[OrganizationProfile] =
@@ -63,7 +63,14 @@ final private[organization] case class OrganizationOrganizerImpl[F[_]](
 
   override def join(code: InviteCode)(implicit ctx: UserAuthCtx): F[OrganizationProfile] =
     for {
-      organization <- organizationAlgebra.join(code)
+      organization <- organizationAlgebra.join(code)(ctx.userId, ctx.email)
+    } yield organization
+
+  override def setInviteStatus(id: OrganizationID, inviteId: OrganizationInviteID, status: InviteStatus)(
+    implicit ctx:                  UserAuthCtx,
+  ): F[Unit] =
+    for {
+      organization <- organizationAlgebra.setInviteStatus(id, inviteId, status)(ctx.userId, ctx.email)
     } yield organization
 
   override def getOrganizationMemberList(id: OrganizationID, pagingInfo: PagingInfo)(

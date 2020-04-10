@@ -1,8 +1,8 @@
 package ticheck.dao.organization.membership
 
-import ticheck.{OrganizationMembershipID, UserID}
+import ticheck.{Email, Limit, Offset, OrganizationID, OrganizationMembershipID, UserID}
 import ticheck.dao.organization.membership.models.OrganizationMembershipRecord
-import ticheck.db.{ConnectionIO, DAOAlgebra}
+import ticheck.db.DAOAlgebra
 
 /**
   *
@@ -12,6 +12,19 @@ import ticheck.db.{ConnectionIO, DAOAlgebra}
   */
 trait OrganizationMembershipSQL[H[_]] extends DAOAlgebra[H, OrganizationMembershipRecord, OrganizationMembershipID] {
 
-  def getByUserID(userId: UserID): ConnectionIO[List[OrganizationMembershipRecord]]
+  def getAllForOrganization(
+    organizationId: OrganizationID,
+    offset:         Offset,
+    limit:          Limit,
+  ): H[List[OrganizationMembershipRecord]]
+
+  def findForOrganizationByUserID(
+    organizationId: OrganizationID,
+    userId:         UserID,
+  ): H[Option[OrganizationMembershipRecord]]
+
+  def findForOrganizationByEmail(organizationId: OrganizationID, email: Email): H[Option[OrganizationMembershipRecord]]
+
+  def getByUserID(userId: UserID): H[List[OrganizationMembershipRecord]]
 
 }

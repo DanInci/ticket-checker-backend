@@ -3,6 +3,7 @@ package ticheck.algebra.organization
 import ticheck.dao.organization.ModuleOrganizationDAO
 import ticheck.dao.organization.invite.ModuleOrganizationInviteDAO
 import ticheck.dao.organization.membership.ModuleOrganizationMembershipDAO
+import ticheck.dao.user.ModuleUserDAO
 import ticheck.db.Transactor
 import ticheck.effect._
 import ticheck.time.ModuleTimeAlgebra
@@ -14,8 +15,9 @@ import ticheck.time.ModuleTimeAlgebra
   *
   */
 trait ModuleOrganizationAlgebra[F[_]] {
-  this: ModuleOrganizationDAO[F]
-    with ModuleOrganizationInviteDAO[F] with ModuleOrganizationMembershipDAO[F] with ModuleTimeAlgebra[F] =>
+  this: ModuleUserDAO[F]
+    with ModuleOrganizationDAO[F] with ModuleOrganizationInviteDAO[F] with ModuleOrganizationMembershipDAO[F]
+    with ModuleTimeAlgebra[F] =>
 
   implicit protected def F: Async[F]
 
@@ -25,10 +27,12 @@ trait ModuleOrganizationAlgebra[F[_]] {
 
   private lazy val _organizationModuleAlgebra: F[OrganizationModuleAlgebra[F]] =
     for {
+      ta    <- timeAlgebra
+      usql  <- userSQL
       osql  <- organizationSQL
       oisql <- organizationInviteSQL
       omsql <- organizationMembershipSQL
-      oa    <- impl.OrganizationAlgebraImpl.async(osql, oisql, omsql)
+      oa    <- impl.OrganizationAlgebraImpl.async(ta, usql, osql, oisql, omsql)
     } yield oa
 
 }

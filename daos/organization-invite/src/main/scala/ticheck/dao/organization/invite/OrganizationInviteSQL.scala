@@ -1,7 +1,7 @@
 package ticheck.dao.organization.invite
 
 import ticheck.db.DAOAlgebra
-import ticheck.OrganizationMembershipID
+import ticheck.{Email, OrganizationID, OrganizationInviteID}
 import ticheck.dao.organization.invite.models.OrganizationInviteRecord
 
 /**
@@ -10,4 +10,10 @@ import ticheck.dao.organization.invite.models.OrganizationInviteRecord
   * @since 4/7/2020
   *
   */
-trait OrganizationInviteSQL[H[_]] extends DAOAlgebra[H, OrganizationInviteRecord, OrganizationMembershipID]
+trait OrganizationInviteSQL[H[_]] extends DAOAlgebra[H, OrganizationInviteRecord, OrganizationInviteID] {
+
+  def findForOrganizationByEmail(id: OrganizationID, email: Email): H[Option[OrganizationInviteRecord]]
+
+  def findByInvitationCode(code: InviteCode): H[Option[OrganizationInviteRecord]]
+
+}

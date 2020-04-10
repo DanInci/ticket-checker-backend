@@ -5,6 +5,7 @@ import ticheck.OrganizationID
 import ticheck.algebra.ticket._
 import ticheck.algebra.ticket.models.TicketStatistic
 import ticheck.auth.models.UserAuthCtx
+import ticheck.dao.ticket.TicketCategory
 import ticheck.effect.Sync
 
 /**

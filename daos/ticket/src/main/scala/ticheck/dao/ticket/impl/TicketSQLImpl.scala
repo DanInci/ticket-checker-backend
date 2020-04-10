@@ -1,6 +1,8 @@
 package ticheck.dao.ticket.impl
 
-import ticheck.dao.ticket.{TicketPK, TicketSQL}
+import doobie.util.fragment.Fragment
+import ticheck.UserID
+import ticheck.dao.ticket.{TicketCategory, TicketPK, TicketSQL}
 import ticheck.dao.ticket.models.TicketRecord
 import ticheck.db._
 import ticheck.effect._
@@ -14,6 +16,17 @@ import ticheck.time.TimeAlgebra
   */
 final private[ticket] class TicketSQLImpl private (override val timeAlgebra: TimeAlgebra)
     extends TicketSQL[ConnectionIO] with TicketComposites {
+
+  override def findByUserID(userId: UserID, category: Option[TicketCategory]): ConnectionIO[List[TicketRecord]] = {
+    val whereClause = category match {
+      case None                                 => s"""WHERE "sold_by_id"=$userId OR "validated_by_id"=$userId"""
+      case Some(TicketCategory.SoldTicket)      => s"""WHERE "sold_by_id"=$userId"""
+      case Some(TicketCategory.ValidatedTicket) => s"""WHERE "validated_by_id"=$userId"""
+    }
+
+    (sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"
+          | FROM "ticket" """.stripMargin ++ Fragment.const(whereClause)).query[TicketRecord].to[List]
+  }
 
   override def find(pk: TicketPK): ConnectionIO[Option[TicketRecord]] =
     sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"
@@ -50,7 +63,8 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
         "validated_at",
       )
 
-  override def updateMany[M[_]](es: M[TicketRecord])(implicit evidence$1: Traverse[M]): ConnectionIO[Unit] = ???
+  override def updateMany[M[_]](es: M[TicketRecord])(implicit evidence$1: Traverse[M]): ConnectionIO[Unit] =
+    es.traverse(update).void
 
   override def delete(pk: TicketPK): ConnectionIO[Unit] =
     sql"""DELETE FROM "ticket" WHERE "id"=${pk._1} AND "organization_id"=${pk._2}""".stripMargin.update.run.void

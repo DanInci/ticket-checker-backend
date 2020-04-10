@@ -51,7 +51,8 @@ final private[user] class UserSQLImpl private (override val timeAlgebra: TimeAlg
       "edited_at",
     )
 
-  override def updateMany[M[_]](es: M[UserRecord])(implicit t: Traverse[M]): ConnectionIO[Unit] = ???
+  override def updateMany[M[_]](es: M[UserRecord])(implicit t: Traverse[M]): ConnectionIO[Unit] =
+    es.traverse(update).void
 
   override def delete(pk: UserID): ConnectionIO[Unit] =
     sql"""DELETE FROM "user" WHERE "id"=$pk""".stripMargin.update.run.void

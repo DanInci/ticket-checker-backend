@@ -11,7 +11,7 @@ import ticheck.dao.organization._
   */
 final case class OrganizationRecord(
   id:        OrganizationID,
-  ownerId:   Option[OwnerID],
+  ownerId:   OwnerID,
   name:      OrganizationName,
   createdAt: CreatedAt,
 )

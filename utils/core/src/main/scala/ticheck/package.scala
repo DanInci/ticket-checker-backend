@@ -45,4 +45,10 @@ package object ticheck
   object PageSize extends PhantomType[Int]
   type PageSize = PageSize.Type
 
+  object Offset extends PhantomType[Int]
+  type Offset = Offset.Type
+
+  object Limit extends PhantomType[Int]
+  type Limit = Limit.Type
+
 }

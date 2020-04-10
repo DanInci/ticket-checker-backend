@@ -4,7 +4,7 @@ import ticheck.{OrganizationID, OrganizationInviteID, PagingInfo, UserID}
 import ticheck.algebra.organization.OrganizationAlgebra
 import ticheck.algebra.organization.models._
 import ticheck.auth.models.UserAuthCtx
-import ticheck.dao.organization.invite.InviteCode
+import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
 import ticheck.effect.Sync
 
 /**
@@ -32,6 +32,10 @@ trait OrganizationOrganizer[F[_]] {
   def cancelInvite(id: OrganizationID, inviteId: OrganizationInviteID)(implicit ctx: UserAuthCtx): F[Unit]
 
   def join(code: InviteCode)(implicit ctx: UserAuthCtx): F[OrganizationProfile]
+
+  def setInviteStatus(id: OrganizationID, inviteId: OrganizationInviteID, status: InviteStatus)(
+    implicit ctx:         UserAuthCtx,
+  ): F[Unit]
 
   def getOrganizationMemberList(id: OrganizationID, pagingInfo: PagingInfo)(
     implicit ctx:                   UserAuthCtx,

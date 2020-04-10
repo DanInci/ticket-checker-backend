@@ -1,9 +1,10 @@
 package ticheck.organizer.ticket
 
 import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
-import ticheck.algebra.ticket.{IsValidated, TicketAlgebra, TicketCategory}
+import ticheck.algebra.ticket.{IsValidated, TicketAlgebra}
 import ticheck.algebra.ticket.models._
 import ticheck.auth.models.UserAuthCtx
+import ticheck.dao.ticket.TicketCategory
 import ticheck.effect.Sync
 
 /**

@@ -1,4 +1,4 @@
-package ticheck.algebra.ticket
+package ticheck.dao.ticket
 
 import ticheck.effect._
 import ticheck.json._

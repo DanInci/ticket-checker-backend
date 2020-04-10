@@ -1,6 +1,7 @@
 package ticheck.algebra.user
 
 import ticheck.dao.organization.membership.ModuleOrganizationMembershipDAO
+import ticheck.dao.ticket.ModuleTicketDAO
 import ticheck.db.Transactor
 import ticheck.dao.user.ModuleUserDAO
 import ticheck.effect._
@@ -13,7 +14,7 @@ import ticheck.time.ModuleTimeAlgebra
   *
   */
 trait ModuleUserAlgebra[F[_]] {
-  this: ModuleUserDAO[F] with ModuleOrganizationMembershipDAO[F] with ModuleTimeAlgebra[F] =>
+  this: ModuleUserDAO[F] with ModuleTicketDAO[F] with ModuleOrganizationMembershipDAO[F] with ModuleTimeAlgebra[F] =>
 
   implicit protected def F: Async[F]
 
@@ -25,8 +26,9 @@ trait ModuleUserAlgebra[F[_]] {
     for {
       ta    <- timeAlgebra
       usql  <- userSQL
+      tsql  <- ticketSQL
       omsql <- organizationMembershipSQL
-      ua    <- impl.UserAlgebraImpl.async(ta, usql, omsql)
+      ua    <- impl.UserAlgebraImpl.async(ta, usql, tsql, omsql)
     } yield ua
 
 }

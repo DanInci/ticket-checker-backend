@@ -6,6 +6,7 @@ import ticheck.OrganizationID
 import ticheck.algebra.ticket.models.TicketStatistic
 import ticheck.algebra.ticket._
 import ticheck.auth.models.UserAuthCtx
+import ticheck.dao.ticket.TicketCategory
 import ticheck.organizer.statistic.StatisticOrganizer
 import ticheck.effect._
 

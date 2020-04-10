@@ -4,6 +4,7 @@ import ticheck._
 import ticheck.algebra.user.models._
 import ticheck.algebra.user._
 import ticheck.dao.organization.membership.{OrganizationMembershipSQL, OrganizationRole}
+import ticheck.dao.ticket.{SoldByName, TicketCategory, TicketSQL, ValidatedByName}
 import ticheck.dao.user.{EditedAt, UserSQL}
 import ticheck.dao.user.models.UserRecord
 import ticheck.effect._
@@ -19,6 +20,7 @@ import ticheck.time.TimeAlgebra
 final private[user] class UserAlgebraImpl[F[_]] private (
   timeAlgebra:               TimeAlgebra,
   userSQL:                   UserSQL[ConnectionIO],
+  ticketSQL:                 TicketSQL[ConnectionIO],
   organizationMembershipSQL: OrganizationMembershipSQL[ConnectionIO],
 )(implicit F:                Async[F], transactor: Transactor[F])
     extends UserAlgebra[F] with DBOperationsAlgebra[F] {
@@ -39,7 +41,21 @@ final private[user] class UserAlgebraImpl[F[_]] private (
     for {
       currentUserDAO <- checkUserUpdate(id, definition)
       now            <- timeAlgebra.now[ConnectionIO].map(EditedAt.spook)
-      newUserDAO = currentUserDAO.copy(name = definition.name, editedAt = Some(now))
+      newUserDAO <- if (currentUserDAO.name != definition.name) {
+        for {
+          newUserDAO <- currentUserDAO.copy(name = definition.name, editedAt = Some(now)).pure[ConnectionIO]
+          _          <- userSQL.update(newUserDAO)
+
+          // update tickets name
+          soldTickets      <- ticketSQL.findByUserID(id, category = Some(TicketCategory.SoldTicket))
+          _                <- ticketSQL.updateMany(soldTickets.map(_.copy(soldByName = SoldByName.spook(newUserDAO.name))))
+          validatedTickets <- ticketSQL.findByUserID(id, category = Some(TicketCategory.ValidatedTicket))
+          _ <- ticketSQL.updateMany(
+            validatedTickets.map(_.copy(validatedByName = Some(ValidatedByName.spook(newUserDAO.name)))),
+          )
+        } yield newUserDAO
+      }
+      else currentUserDAO.pure[ConnectionIO]
     } yield UserProfile.fromDAO(newUserDAO)
   }
 
@@ -80,8 +96,9 @@ private[user] object UserAlgebraImpl {
   def async[F[_]: Async: Transactor](
     timeAlgebra:               TimeAlgebra,
     userSQL:                   UserSQL[ConnectionIO],
+    ticketSQL:                 TicketSQL[ConnectionIO],
     organizationMembershipSQL: OrganizationMembershipSQL[ConnectionIO],
   ): F[UserModuleAlgebra[F]] =
-    Async[F].pure(new UserAlgebraImpl[F](timeAlgebra, userSQL, organizationMembershipSQL))
+    Async[F].pure(new UserAlgebraImpl[F](timeAlgebra, userSQL, ticketSQL, organizationMembershipSQL))
 
 }

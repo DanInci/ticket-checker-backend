@@ -5,7 +5,7 @@ import org.http4s.QueryParamDecoder
 import org.http4s.dsl.Http4sDsl
 import ticheck.{OrganizationID, OrganizationInviteID, PagingInfo, UserID}
 import ticheck.algebra.organization.models._
-import ticheck.dao.organization.invite.InviteCode
+import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
 import ticheck.effect._
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.organizer.organization.OrganizationOrganizer
@@ -36,9 +36,9 @@ final private[rest] class OrganizationRoutes[F[_]](
         resp       <- Created(profile)
       } yield resp
 
-    case GET -> Root / `organizations-route` :? PageOffsetMatcher(offset) +& PageLimitMatcher(limit) as user =>
+    case GET -> Root / `organizations-route` :? PageNumberMatcher(pageNumber) +& PageSizeMatcher(pageSize) as user =>
       for {
-        organizations <- organizationOrganizer.getOrganizationList(PagingInfo(offset, limit))(user)
+        organizations <- organizationOrganizer.getOrganizationList(PagingInfo(pageNumber, pageSize))(user)
         resp          <- Ok(organizations)
       } yield resp
 
@@ -81,11 +81,31 @@ final private[rest] class OrganizationRoutes[F[_]](
         _    <- organizationOrganizer.join(code)(user)
         resp <- Ok()
       } yield resp
+
+    case POST -> Root / `organizations-route` / FUUIDVar(orgId) / "invite" / FUUIDVar(inviteId) / "accept" as user =>
+      for {
+        _ <- organizationOrganizer.setInviteStatus(
+          OrganizationID.spook(orgId),
+          OrganizationInviteID.spook(inviteId),
+          InviteStatus.InviteAccepted,
+        )(user)
+        resp <- Ok()
+      } yield resp
+
+    case POST -> Root / `organizations-route` / FUUIDVar(orgId) / "invite" / FUUIDVar(inviteId) / "decline" as user =>
+      for {
+        _ <- organizationOrganizer.setInviteStatus(
+          OrganizationID.spook(orgId),
+          OrganizationInviteID.spook(inviteId),
+          InviteStatus.InviteDeclined,
+        )(user)
+        resp <- Ok()
+      } yield resp
   }
 
   private val organizationMembershipRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route`
-          :? PageOffsetMatcher(offset) +& PageLimitMatcher(limit) as user =>
+          :? PageNumberMatcher(offset) +& PageSizeMatcher(limit) as user =>
       for {
         members <- organizationOrganizer
           .getOrganizationMemberList(OrganizationID.spook(orgId), PagingInfo(offset, limit))(user)

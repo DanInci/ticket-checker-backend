@@ -7,6 +7,7 @@ import org.http4s.{ParseFailure, QueryParamDecoder, QueryParameterValue}
 import org.http4s.dsl.Http4sDsl
 import ticheck.OrganizationID
 import ticheck.algebra.ticket.{StatisticsSize, StatisticsTimestamp, _}
+import ticheck.dao.ticket.TicketCategory
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.effect._
 import ticheck.organizer.statistic.StatisticOrganizer

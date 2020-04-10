@@ -12,6 +12,6 @@ import ticheck.db._
   */
 trait UserSQL[H[_]] extends DAOAlgebra[H, UserRecord, UserID] {
 
-  def findByEmail(email: Email): ConnectionIO[Option[UserRecord]]
+  def findByEmail(email: Email): H[Option[UserRecord]]
 
 }

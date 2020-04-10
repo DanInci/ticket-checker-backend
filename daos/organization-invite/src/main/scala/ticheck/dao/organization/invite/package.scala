@@ -15,8 +15,8 @@ package object invite {
   object InviteCode extends PhantomType[String]
   type InviteCode = InviteCode.Type
 
-  object RespondedAt extends PhantomType[OffsetDateTime]
-  type RespondedAt = RespondedAt.Type
+  object AnsweredAt extends PhantomType[OffsetDateTime]
+  type AnsweredAt = AnsweredAt.Type
 
   object InvitedAt extends PhantomType[OffsetDateTime]
   type InvitedAt = InvitedAt.Type

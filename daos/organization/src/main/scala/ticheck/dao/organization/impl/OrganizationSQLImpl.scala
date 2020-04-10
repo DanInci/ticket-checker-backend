@@ -1,9 +1,10 @@
 package ticheck.dao.organization.impl
 
+import doobie.util.fragment.Fragment
 import ticheck._
 import ticheck.db._
 import ticheck.effect._
-import ticheck.dao.organization.OrganizationSQL
+import ticheck.dao.organization.{OrganizationName, OrganizationSQL}
 import ticheck.dao.organization.models.OrganizationRecord
 import ticheck.time.TimeAlgebra
 
@@ -15,6 +16,32 @@ import ticheck.time.TimeAlgebra
   */
 final private[organization] class OrganizationSQLImpl private (override val timeAlgebra: TimeAlgebra)
     extends OrganizationSQL[ConnectionIO] with OrganizationComposites {
+
+  override def getAll(
+    filterNot: Option[List[OrganizationID]],
+    offset:    Offset,
+    limit:     Limit,
+  ): ConnectionIO[List[OrganizationRecord]] = {
+    val whereClause =
+      filterNot
+        .map {
+          case Nil => """WHERE "id" IN (NULL)"""
+          case availableOrganizationIds =>
+            s"""WHERE "id" IN ${availableOrganizationIds.map(id => s"'$id'").mkString("(", ",", ")")}"""
+        }
+        .getOrElse("")
+    val sortClause = """ORDER BY created_at DESC"""
+
+    (sql"""SELECT "id", "owner_id", "name", "created_at"
+          | FROM "organization" """.stripMargin
+      ++ Fragment.const(whereClause) ++ Fragment.const(sortClause) ++
+      sql""" LIMIT $limit OFFSET $offset""".stripMargin).query[OrganizationRecord].to[List]
+  }
+
+  override def findByName(name: OrganizationName): ConnectionIO[Option[OrganizationRecord]] =
+    sql"""SELECT "id", "owner_id", "name", "created_at"
+         | FROM "organization"
+         | WHERE "name"=$name""".stripMargin.query[OrganizationRecord].option
 
   override def find(pk: OrganizationID): ConnectionIO[Option[OrganizationRecord]] =
     sql"""SELECT "id", "owner_id", "name", "created_at"
@@ -35,15 +62,16 @@ final private[organization] class OrganizationSQLImpl private (override val time
 
   override def update(e: OrganizationRecord): ConnectionIO[OrganizationRecord] =
     sql"""UPDATE "organization" 
-    | SET "owner_id"=${e.ownerId}, "name"=${e.name}, "created_at"=${e.createdAt}
-    | WHERE "id"=${e.id}""".update.withUniqueGeneratedKeys[OrganizationRecord](
+         | SET "owner_id"=${e.ownerId}, "name"=${e.name}, "created_at"=${e.createdAt}
+         | WHERE "id"=${e.id}""".stripMargin.update.withUniqueGeneratedKeys[OrganizationRecord](
       "id",
       "owner_id",
       "name",
       "created_at",
     )
 
-  override def updateMany[M[_]](es: M[OrganizationRecord])(implicit evidence$1: Traverse[M]): ConnectionIO[Unit] = ???
+  override def updateMany[M[_]](es: M[OrganizationRecord])(implicit evidence$1: Traverse[M]): ConnectionIO[Unit] =
+    es.traverse(update).void
 
   override def delete(pk: OrganizationID): ConnectionIO[Unit] =
     sql"""DELETE FROM "organization" WHERE "id"=$pk""".update.run.void

@@ -6,8 +6,9 @@ import ticheck.effect._
 import ticheck.rest._
 import ticheck.http._
 import org.http4s.dsl.Http4sDsl
-import ticheck.algebra.ticket.{IsValidated, TicketCategory}
+import ticheck.algebra.ticket.IsValidated
 import ticheck.algebra.ticket.models.{TicketDefinition, TicketUpdateDefinition}
+import ticheck.dao.ticket.TicketCategory
 import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.organizer.ticket.TicketOrganizer
@@ -44,10 +45,16 @@ final private[rest] case class TicketRoutes[F[_]](private val ticketOrganizer: T
 
     case GET -> Root / `organizations-route` / FUUIDVar(oid) / `tickets-route`
           :? CategoryQueryParamMatcher(category) +& UserIDQueryParamMatcher(uid) +& SearchQueryParamMatcher(searchValue)
-            +& PageOffsetMatcher(offset) +& PageLimitMatcher(limit) as user =>
+            +& PageNumberMatcher(pageNumber) +& PageSizeMatcher(pageSize) as user =>
       for {
         tickets <- ticketOrganizer
-          .getOrganizationTickets(OrganizationID.spook(oid), PagingInfo(offset, limit), category, uid, searchValue)(
+          .getOrganizationTickets(
+            OrganizationID.spook(oid),
+            PagingInfo(pageNumber, pageSize),
+            category,
+            uid,
+            searchValue,
+          )(
             user,
           )
         resp <- Ok(tickets)

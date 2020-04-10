@@ -2,6 +2,7 @@ package ticheck.algebra.organization.models
 
 import ticheck.{CreatedAt, OrganizationID}
 import ticheck.dao.organization.OrganizationName
+import ticheck.dao.organization.models.OrganizationRecord
 
 /**
   *
@@ -19,5 +20,12 @@ object OrganizationList {
   import ticheck.json._
 
   implicit val jsonCodec: Codec[OrganizationList] = derive.codec[OrganizationList]
+
+  def fromDAO(o: OrganizationRecord): OrganizationList =
+    OrganizationList(
+      o.id,
+      o.name,
+      o.createdAt,
+    )
 
 }

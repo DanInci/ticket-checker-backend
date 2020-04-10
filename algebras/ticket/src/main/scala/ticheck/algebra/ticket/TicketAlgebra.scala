@@ -2,6 +2,7 @@ package ticheck.algebra.ticket
 
 import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
 import ticheck.algebra.ticket.models._
+import ticheck.dao.ticket.TicketCategory
 
 /**
   *
