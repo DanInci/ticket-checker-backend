@@ -43,4 +43,13 @@ package object ticket {
   object ValidatedAt extends PhantomType[OffsetDateTime]
   type ValidatedAt = ValidatedAt.Type
 
+  object Count extends PhantomType[Int]
+  type Count = Count.Type
+
+  object StartDate extends PhantomType[OffsetDateTime]
+  type StartDate = StartDate.Type
+
+  object EndDate extends PhantomType[OffsetDateTime]
+  type EndDate = EndDate.Type
+
 }

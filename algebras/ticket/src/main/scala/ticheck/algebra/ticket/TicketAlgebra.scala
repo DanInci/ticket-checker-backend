@@ -1,6 +1,6 @@
 package ticheck.algebra.ticket
 
-import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
+import ticheck.{Name, OrganizationID, PagingInfo, TicketID, UserID}
 import ticheck.algebra.ticket.models._
 import ticheck.dao.ticket.TicketCategory
 
@@ -12,7 +12,7 @@ import ticheck.dao.ticket.TicketCategory
   */
 trait TicketAlgebra[F[_]] {
 
-  def getAll(
+  def getAllForOrganization(
     organizationId: OrganizationID,
     pagingInfo:     PagingInfo,
     byCategory:     Option[TicketCategory],
@@ -20,13 +20,19 @@ trait TicketAlgebra[F[_]] {
     searchVal:      Option[String],
   ): F[List[TicketList]]
 
-  def create(organizationId: OrganizationID, definition: TicketDefinition): F[Ticket]
+  def create(organizationId: OrganizationID, definition: TicketDefinition)(
+    implicit userId:         UserID,
+    name:                    Name,
+  ): F[Ticket]
 
   def getById(organizationId: OrganizationID, ticketId: TicketID): F[Ticket]
 
   def updateById(organizationId: OrganizationID, ticketId: TicketID, definition: TicketUpdateDefinition): F[Ticket]
 
-  def setValidationStatusById(organizationId: OrganizationID, ticketId: TicketID, isValidated: IsValidated): F[Ticket]
+  def setValidationStatusById(organizationId: OrganizationID, ticketId: TicketID, isValidated: IsValidated)(
+    implicit userId:                          UserID,
+    name:                                     Name,
+  ): F[Ticket]
 
   def deleteById(organizationId: OrganizationID, ticketId: TicketID): F[Unit]
 

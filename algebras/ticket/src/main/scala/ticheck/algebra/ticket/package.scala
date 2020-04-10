@@ -20,9 +20,6 @@ package object ticket {
   object StatisticsSize extends PhantomType[Int]
   type StatisticsSize = StatisticsSize.Type
 
-  object StatisticsCount extends PhantomType[Long]
-  type StatisticsCount = StatisticsCount.Type
-
   object StatisticsTimestamp extends PhantomType[LocalDateTime]
   type StatisticsTimestamp = StatisticsTimestamp.Type
 

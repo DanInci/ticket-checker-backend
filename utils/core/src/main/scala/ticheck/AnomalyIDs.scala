@@ -49,6 +49,10 @@ object AnomalyIDs {
   case object OrganizationMemberRoleNotAllowedID extends AnomalyID { override val name: String = "ORG_IIA_08" }
 
   //------------------------------- TICKET ALGEBRA ---------------------------------------
-  case object InvalidIntervalTypeID extends AnomalyID { override val name: String = "IV_INTERVAL_TYP" }
+  case object InvalidIntervalTypeID       extends AnomalyID { override val name: String = "IV_INTERVAL_TYP" }
+  case object TicketNotFoundID            extends AnomalyID { override val name: String = "TIC_NFA_01" }
+  case object TicketAlreadyExistsID       extends AnomalyID { override val name: String = "TIC_CA_02" }
+  case object TicketAlreadyValidatedID    extends AnomalyID { override val name: String = "TIC_CA_03" }
+  case object TicketAlreadyNotValidatedID extends AnomalyID { override val name: String = "TIC_CA_04" }
 
 }

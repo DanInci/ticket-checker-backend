@@ -51,8 +51,9 @@ trait ModuleTicketCheckerRest[F[_]] {
 
   private lazy val _ticketRoutes: F[TicketRoutes[F]] =
     for {
+      uma             <- userModuleAlgebra
       tma             <- ticketModuleAlgebra
-      ticketOrganizer <- TicketOrganizer[F](tma)
+      ticketOrganizer <- TicketOrganizer[F](uma, tma)
     } yield new TicketRoutes[F](ticketOrganizer)
 
   private lazy val _statisticRoutes: F[StatisticRoutes[F]] =

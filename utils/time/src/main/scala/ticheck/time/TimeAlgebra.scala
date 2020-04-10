@@ -3,7 +3,7 @@ package ticheck.time
 import java.sql.Timestamp
 
 import ticheck.effect._
-import java.time.{LocalDate, OffsetDateTime}
+import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 
 /**
   *
@@ -16,6 +16,8 @@ trait TimeAlgebra {
   def now[F[_]: Sync]: F[OffsetDateTime]
 
   def toLocalDate(timestamp: Timestamp): LocalDate
+
+  def toOffsetDateTime(dateTime: LocalDateTime): OffsetDateTime
 
   def toOffsetDateTime(timestamp: Timestamp): OffsetDateTime
 

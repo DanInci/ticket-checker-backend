@@ -1,6 +1,6 @@
 package ticheck.algebra.ticket.models
 
-import ticheck.algebra.ticket.{StatisticsCount, StatisticsTimestamp}
+import ticheck.dao.ticket.{Count, EndDate, StartDate}
 
 /**
   *
@@ -9,8 +9,9 @@ import ticheck.algebra.ticket.{StatisticsCount, StatisticsTimestamp}
   *
   */
 final case class TicketStatistic(
-  count: StatisticsCount,
-  date:  StatisticsTimestamp,
+  count:     Count,
+  startDate: StartDate,
+  endDate:   EndDate,
 )
 
 object TicketStatistic {

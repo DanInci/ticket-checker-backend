@@ -1,7 +1,7 @@
 package ticheck.time.impl
 
 import java.sql.Timestamp
-import java.time.{LocalDate, OffsetDateTime}
+import java.time.{LocalDate, LocalDateTime, OffsetDateTime}
 
 import ticheck.effect._
 import ticheck.time.{TimeAlgebra, TimeConfig}
@@ -15,6 +15,9 @@ import ticheck.time.{TimeAlgebra, TimeConfig}
 final private[time] class TimeAlgebraImpl private (timeConfig: TimeConfig) extends TimeAlgebra {
 
   override def now[F[_]: Sync]: F[OffsetDateTime] = Sync[F].delay(OffsetDateTime.now(timeConfig.zoneId))
+
+  override def toOffsetDateTime(dateTime: LocalDateTime): OffsetDateTime =
+    dateTime.atZone(timeConfig.zoneId).toOffsetDateTime
 
   override def toOffsetDateTime(timestamp: Timestamp): OffsetDateTime =
     timestamp.toLocalDateTime.atZone(timeConfig.zoneId).toOffsetDateTime

@@ -3,6 +3,7 @@ package ticheck.organizer.ticket
 import ticheck.{OrganizationID, PagingInfo, TicketID, UserID}
 import ticheck.algebra.ticket.{IsValidated, TicketAlgebra}
 import ticheck.algebra.ticket.models._
+import ticheck.algebra.user.UserAlgebra
 import ticheck.auth.models.UserAuthCtx
 import ticheck.dao.ticket.TicketCategory
 import ticheck.effect.Sync
@@ -23,7 +24,9 @@ trait TicketOrganizer[F[_]] {
     searchVal:    Option[String] = None,
   )(implicit ctx: UserAuthCtx): F[List[TicketList]]
 
-  def createTicket(orgId: OrganizationID, definition: TicketDefinition)(implicit ctx: UserAuthCtx): F[Ticket]
+  def createTicket(orgId: OrganizationID, definition: TicketDefinition)(
+    implicit ctx:         UserAuthCtx,
+  ): F[Ticket]
 
   def getTicket(orgId: OrganizationID, ticketId: TicketID)(implicit ctx: UserAuthCtx): F[Ticket]
 
@@ -41,8 +44,9 @@ trait TicketOrganizer[F[_]] {
 
 object TicketOrganizer {
 
-  def apply[F[_]: Sync](ticketAlgebra: TicketAlgebra[F]): F[TicketOrganizer[F]] = Sync[F].pure(
-    new impl.TicketOrganizerImpl[F](ticketAlgebra),
-  )
+  def apply[F[_]: Sync](userAlgebra: UserAlgebra[F], ticketAlgebra: TicketAlgebra[F]): F[TicketOrganizer[F]] =
+    Sync[F].pure(
+      new impl.TicketOrganizerImpl[F](userAlgebra, ticketAlgebra),
+    )
 
 }

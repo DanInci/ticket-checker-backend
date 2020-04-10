@@ -1,8 +1,9 @@
 package ticheck.dao.ticket.impl
 
 import doobie.util.fragment.Fragment
-import ticheck.UserID
-import ticheck.dao.ticket.{TicketCategory, TicketPK, TicketSQL}
+import ticheck.dao.ticket.TicketCategory.{SoldTicket, ValidatedTicket}
+import ticheck.{Limit, Offset, OrganizationID, UserID}
+import ticheck.dao.ticket.{Count, EndDate, StartDate, TicketCategory, TicketPK, TicketSQL}
 import ticheck.dao.ticket.models.TicketRecord
 import ticheck.db._
 import ticheck.effect._
@@ -16,6 +17,57 @@ import ticheck.time.TimeAlgebra
   */
 final private[ticket] class TicketSQLImpl private (override val timeAlgebra: TimeAlgebra)
     extends TicketSQL[ConnectionIO] with TicketComposites {
+
+  override def countTicketsBetweenDates(
+    byCategory: TicketCategory,
+    startDate:  StartDate,
+    endDate:    EndDate,
+  ): ConnectionIO[Count] = {
+    val whereClause = byCategory match {
+      case SoldTicket      => s"""WHERE "sold_at" >= '$startDate' AND "sold_at" < '$endDate'"""
+      case ValidatedTicket => s"""WHERE "validated_at" >= '$startDate' AND "validated_at" < '$endDate'"""
+    }
+
+    (sql"""SELECT COUNT(*) FROM "ticket" """.stripMargin ++ Fragment.const(whereClause)).query[Count].unique
+  }
+
+  override def getAllForOrganization(
+    organizationId: OrganizationID,
+    offset:         Offset,
+    limit:          Limit,
+    byCategory:     Option[TicketCategory],
+    byUserId:       Option[UserID],
+    searchVal:      Option[String],
+  ): ConnectionIO[List[TicketRecord]] = {
+    val organizationIdWC = Some(s""""organization_id"=$organizationId""")
+    val byCategoryWC = byCategory.map {
+      case ValidatedTicket =>
+        s""""validated_at" IS NOT NULL"""
+      case _ => ""
+    }
+    val byUserIdWC = byUserId.map(
+      uid =>
+        byCategory match {
+          case Some(SoldTicket)      => s""""sold_by_id"=$uid"""
+          case Some(ValidatedTicket) => s""""validated_by_id"=$uid"""
+          case _                     => s"""("sold_by_id"=$uid OR "validated_by_id"=$uid)"""
+        },
+    )
+    val searchValWC = searchVal.map(
+      s =>
+        byUserId match {
+          case Some(_) => s""""sold_to" LIKE '$s%'"""
+          case None    => s"""("sold_to" LIKE '$s%' OR "sold_by_name" LIKE '$s%' OR "validated_by_name" LIKE '$s%')"""
+        },
+    )
+    val WCs         = List(organizationIdWC, byCategoryWC, byUserIdWC, searchValWC).flatten
+    val whereClause = WCs.mkString("WHERE ", "AND", "")
+
+    (sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"
+          | FROM "ticket" """.stripMargin
+      ++ Fragment.const(whereClause) ++
+      sql""" ORDER BY "sold_at" DESC OFFSET $offset LIMIT $limit """.stripMargin).query[TicketRecord].to[List]
+  }
 
   override def findByUserID(userId: UserID, category: Option[TicketCategory]): ConnectionIO[List[TicketRecord]] = {
     val whereClause = category match {
