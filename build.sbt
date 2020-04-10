@@ -97,12 +97,14 @@ def organizerModule(name: String): Project = Project(s"organizer-$name", file(s"
 lazy val `organizer-user` = organizerModule("user")
   .settings(commonSettings)
   .dependsOn(
+    `algebra-organization`,
     `algebra-user`,
     `algebra-auth`,
     `util-core`,
     `util-http`,
   )
   .aggregate(
+    `algebra-organization`,
     `algebra-user`,
     `algebra-auth`,
     `util-core`,

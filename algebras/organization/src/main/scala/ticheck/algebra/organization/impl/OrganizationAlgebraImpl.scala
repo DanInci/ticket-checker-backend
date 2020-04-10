@@ -3,7 +3,7 @@ package ticheck.algebra.organization.impl
 import ticheck._
 import ticheck.algebra.organization.models._
 import ticheck.algebra.organization._
-import ticheck.dao.organization.invite.InviteStatus.{InviteAccepted, InviteDeclined}
+import ticheck.dao.organization.invite.InviteStatus.{InviteAccepted, InviteDeclined, InvitePending}
 import ticheck.dao.organization.{OrganizationSQL, OwnerID}
 import ticheck.dao.organization.invite._
 import ticheck.dao.organization.invite.models.OrganizationInviteRecord
@@ -82,6 +82,17 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       _ <- checkDelete(id)
       _ <- organizationSQL.delete(id)
     } yield ()
+  }
+
+  override def getUserInvites(
+    userId:       UserID,
+    pagingInfo:   PagingInfo,
+    statusFilter: Option[InviteStatus],
+  ): F[List[OrganizationInviteList]] = transact {
+    for {
+      inviteDaos <- organizationInviteSQL.getAllForUser(userId, pagingInfo.getOffset, pagingInfo.getLimit, statusFilter)
+      invites = inviteDaos.map(OrganizationInviteList.fromDAO)
+    } yield invites
   }
 
   override def sendInvite(id: OrganizationID, definition: OrganizationInviteDefinition): F[OrganizationInvite] =
@@ -189,9 +200,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       orgDAO <- organizationSQL.retrieve(updatedInviteDAO.organizationId)
     } yield orgDAO
 
-  private def invitationDeclined(inviteDAO: OrganizationInviteRecord)(
-    implicit userId:                        UserID,
-  ): ConnectionIO[Unit] =
+  private def invitationDeclined(inviteDAO: OrganizationInviteRecord): ConnectionIO[Unit] =
     for {
       now <- timeAlgebra.now[ConnectionIO]
       updatedInviteDAO = inviteDAO.copy(status = InviteStatus.InviteDeclined, answeredAt = Some(AnsweredAt.spook(now)))
@@ -228,7 +237,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
 
   /*
    * - check if organization with id exists
-   * - check if invite for email exists
+   * - check if invite for email exists and is still pending
    * - check if user with email is not already a member of the organization
    */
   private def checkSendInvite(id: OrganizationID, definition: OrganizationInviteDefinition): ConnectionIO[Unit] =
@@ -236,6 +245,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       _ <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
       _ <- organizationInviteSQL
         .findForOrganizationByEmail(id, definition.email)
+        .map(_.filter(_.status == InvitePending))
         .ifSomeRaise(OrganizationInviteForEmailExistsCA(id, definition.email))
       _ <- organizationMembershipSQL
         .findForOrganizationByEmail(id, definition.email)

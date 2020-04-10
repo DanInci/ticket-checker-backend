@@ -1,11 +1,14 @@
 package ticheck.organizer.user.impl
 
-import ticheck.UserID
+import ticheck.{PagingInfo, UserID}
+import ticheck.algebra.organization.OrganizationAlgebra
+import ticheck.algebra.organization.models.OrganizationInviteList
 import ticheck.algebra.user.UserAlgebra
 import ticheck.auth.models.UserAuthCtx
 import ticheck.algebra.user.models._
 import ticheck.auth.AuthAlgebra
 import ticheck.auth.models.{LoginRequest, RegistrationRequest}
+import ticheck.dao.organization.invite.InviteStatus
 import ticheck.organizer.user.UserOrganizer
 import ticheck.organizer.user.models.LoginResponse
 import ticheck.effect._
@@ -17,9 +20,10 @@ import ticheck.effect._
   *
   */
 final private[user] class UserOrganizerImpl[F[_]](
-  private val authAlgebra: AuthAlgebra[F],
-  private val userAlgebra: UserAlgebra[F],
-)(implicit F:              Sync[F])
+  private val authAlgebra:         AuthAlgebra[F],
+  private val userAlgebra:         UserAlgebra[F],
+  private val organizationAlgebra: OrganizationAlgebra[F],
+)(implicit F:                      Sync[F])
     extends UserOrganizer[F] {
 
   override def register(regData: RegistrationRequest): F[Unit] = authAlgebra.register(regData)
@@ -44,5 +48,14 @@ final private[user] class UserOrganizerImpl[F[_]](
     for {
       _ <- userAlgebra.deleteById(id)
     } yield ()
+
+  override def getUserInvites(
+    id:           UserID,
+    pagingInfo:   PagingInfo,
+    statusFilter: Option[InviteStatus],
+  )(implicit ctx: UserAuthCtx): F[List[OrganizationInviteList]] =
+    for {
+      invites <- organizationAlgebra.getUserInvites(id, pagingInfo, statusFilter)
+    } yield invites
 
 }

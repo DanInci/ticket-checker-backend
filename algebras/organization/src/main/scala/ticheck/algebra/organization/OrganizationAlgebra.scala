@@ -22,6 +22,12 @@ trait OrganizationAlgebra[F[_]] {
 
   def deleteById(id: OrganizationID): F[Unit]
 
+  def getUserInvites(
+    userId:       UserID,
+    pagingInfo:   PagingInfo,
+    statusFilter: Option[InviteStatus],
+  ): F[List[OrganizationInviteList]]
+
   def sendInvite(id: OrganizationID, invite: OrganizationInviteDefinition): F[OrganizationInvite]
 
   def cancelInvite(id: OrganizationID, inviteId: OrganizationInviteID): F[Unit]

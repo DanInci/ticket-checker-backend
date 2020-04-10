@@ -1,11 +1,12 @@
 package ticheck.rest.routes
 
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
-import org.http4s.HttpRoutes
+import org.http4s.{HttpRoutes, ParseFailure, QueryParamDecoder, QueryParameterValue}
 import org.http4s.dsl.Http4sDsl
-import ticheck.UserID
+import ticheck.{PagingInfo, UserID}
 import ticheck.algebra.user.models.UserDefinition
 import ticheck.auth.models.{LoginRequest, RegistrationRequest}
+import ticheck.dao.organization.invite.InviteStatus
 import ticheck.effect._
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.rest._
@@ -21,6 +22,15 @@ import ticheck.rest.UserAuthCtxRoutes
   */
 final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserOrganizer[F])(implicit val F: Async[F])
     extends Http4sDsl[F] with RoutesHelpers with QueryParamInstances {
+
+  implicit val inviteStatusQueryParamDecoder: QueryParamDecoder[InviteStatus] =
+    (value: QueryParameterValue) =>
+      InviteStatus
+        .fromString(value.value)
+        .leftMap(t => ParseFailure("Query param decoding failed", t.getMessage))
+        .toValidatedNel
+
+  object InviteStatusQueryParamMatcher extends OptionalQueryParamDecoderMatcher[InviteStatus]("status")
 
   private val usersRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case GET -> Root / `users-route` / FUUIDVar(uid) as user =>
@@ -40,6 +50,13 @@ final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserO
       for {
         _    <- userOrganizer.deleteUser(UserID.spook(uid))(user)
         resp <- NoContent()
+      } yield resp
+
+    case GET -> Root / `users-route` / FUUIDVar(uid) / "invites" :? PageNumberMatcher(pageNumber)
+          +& PageSizeMatcher(pageSize) +& InviteStatusQueryParamMatcher(inviteStatus) as user =>
+      for {
+        invites <- userOrganizer.getUserInvites(UserID.spook(uid), PagingInfo(pageNumber, pageSize), inviteStatus)(user)
+        resp    <- Ok(invites)
       } yield resp
   }
 

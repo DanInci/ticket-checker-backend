@@ -45,7 +45,8 @@ trait ModuleTicketCheckerRest[F[_]] {
     for {
       aa            <- authAlgebra
       uma           <- userModuleAlgebra
-      userOrganizer <- UserOrganizer[F](aa, uma)
+      oma           <- organizationModuleAlgebra
+      userOrganizer <- UserOrganizer[F](aa, uma, oma)
     } yield new UserRoutes[F](userOrganizer)
 
   private lazy val _ticketRoutes: F[TicketRoutes[F]] =

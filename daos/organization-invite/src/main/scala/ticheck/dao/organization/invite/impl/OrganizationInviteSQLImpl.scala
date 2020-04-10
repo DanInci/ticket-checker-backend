@@ -1,7 +1,8 @@
 package ticheck.dao.organization.invite.impl
 
-import ticheck.{Email, OrganizationID, OrganizationInviteID}
-import ticheck.dao.organization.invite.{InviteCode, OrganizationInviteSQL}
+import doobie.util.fragment.Fragment
+import ticheck.{Email, Limit, Offset, OrganizationID, OrganizationInviteID, UserID}
+import ticheck.dao.organization.invite.{InviteCode, InviteStatus, OrganizationInviteSQL}
 import ticheck.dao.organization.invite.models.OrganizationInviteRecord
 import ticheck.db._
 import ticheck.effect._
@@ -15,6 +16,26 @@ import ticheck.time.TimeAlgebra
   */
 final private[invite] class OrganizationInviteSQLImpl private (override val timeAlgebra: TimeAlgebra)
     extends OrganizationInviteSQL[ConnectionIO] with OrganizationInviteComposites {
+
+  override def getAllForUser(
+    userId:       UserID,
+    offset:       Offset,
+    limit:        Limit,
+    statusFilter: Option[InviteStatus],
+  ): ConnectionIO[List[OrganizationInviteRecord]] = {
+    val whereClause = statusFilter match {
+      case None         => s"""WHERE "u"."id"=$userId"""
+      case Some(status) => s"""WHERE "u"."id"=$userId AND "om"."status"=$status"""
+    }
+
+    (sql"""SELECT "om"."id", "om"."organization_id", "om"."email", "om"."code", "om"."status", "om"."answered_at", "om"."invited_at"
+          | FROM "organization_invite" "om"
+          | RIGHT JOIN "user" "u" ON "u"."email" = "om"."email" """.stripMargin
+      ++ Fragment.const(whereClause) ++
+      sql""" ORDER BY "om"."invited_at" DESC OFFSET $offset LIMIT $limit""".stripMargin)
+      .query[OrganizationInviteRecord]
+      .to[List]
+  }
 
   override def findForOrganizationByEmail(
     id:    OrganizationID,
