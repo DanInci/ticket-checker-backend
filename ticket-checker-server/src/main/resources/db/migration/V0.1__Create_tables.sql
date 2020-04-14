@@ -43,7 +43,7 @@ CREATE TABLE "ticket" (
     "sold_by_name"      VARCHAR NOT NULL,
     "sold_at"           TIMESTAMP NOT NULL,
     "validated_by_id"   UUID NULL,
-    "validated_by_name" VARCHAR NOT NULL,
+    "validated_by_name" VARCHAR NULL,
     "validated_at"      TIMESTAMP NULL
 );
 

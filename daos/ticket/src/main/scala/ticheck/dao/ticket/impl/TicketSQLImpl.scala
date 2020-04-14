@@ -39,8 +39,10 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
     byUserId:       Option[UserID],
     searchVal:      Option[String],
   ): ConnectionIO[List[TicketRecord]] = {
-    val organizationIdWC = Some(s""""organization_id"=$organizationId""")
+    val organizationIdWC = Some(s""""organization_id"='$organizationId'""")
     val byCategoryWC = byCategory.map {
+      case SoldTicket =>
+        s""""sold_at" IS NOT NULL"""
       case ValidatedTicket =>
         s""""validated_at" IS NOT NULL"""
       case _ => ""
@@ -48,9 +50,9 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
     val byUserIdWC = byUserId.map(
       uid =>
         byCategory match {
-          case Some(SoldTicket)      => s""""sold_by_id"=$uid"""
-          case Some(ValidatedTicket) => s""""validated_by_id"=$uid"""
-          case _                     => s"""("sold_by_id"=$uid OR "validated_by_id"=$uid)"""
+          case Some(SoldTicket)      => s""""sold_by_id"='$uid'"""
+          case Some(ValidatedTicket) => s""""validated_by_id"='$uid'"""
+          case _                     => s"""("sold_by_id"='$uid' OR "validated_by_id"='$uid')"""
         },
     )
     val searchValWC = searchVal.map(
@@ -61,7 +63,7 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
         },
     )
     val WCs         = List(organizationIdWC, byCategoryWC, byUserIdWC, searchValWC).flatten
-    val whereClause = WCs.mkString("WHERE ", "AND", "")
+    val whereClause = WCs.mkString("WHERE ", " AND ", "")
 
     (sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"
           | FROM "ticket" """.stripMargin
