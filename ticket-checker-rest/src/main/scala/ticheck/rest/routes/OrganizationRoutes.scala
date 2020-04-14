@@ -105,10 +105,10 @@ final private[rest] class OrganizationRoutes[F[_]](
 
   private val organizationMembershipRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route`
-          :? PageNumberMatcher(offset) +& PageSizeMatcher(limit) as user =>
+          :? PageNumberMatcher(pageNumber) +& PageSizeMatcher(pageSize) as user =>
       for {
         members <- organizationOrganizer
-          .getOrganizationMemberList(OrganizationID.spook(orgId), PagingInfo(offset, limit))(user)
+          .getOrganizationMemberList(OrganizationID.spook(orgId), PagingInfo(pageNumber, pageSize))(user)
         resp <- Ok(members)
       } yield resp
 

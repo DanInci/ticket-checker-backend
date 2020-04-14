@@ -24,13 +24,13 @@ final private[invite] class OrganizationInviteSQLImpl private (override val time
     statusFilter: Option[InviteStatus],
   ): ConnectionIO[List[OrganizationInviteRecord]] = {
     val whereClause = statusFilter match {
-      case None         => s"""WHERE "u"."id"=$userId"""
-      case Some(status) => s"""WHERE "u"."id"=$userId AND "om"."status"=$status"""
+      case None         => s"""WHERE "u"."id"='$userId'"""
+      case Some(status) => s"""WHERE "u"."id"='$userId' AND "om"."status"='${status.asString}'"""
     }
 
     (sql"""SELECT "om"."id", "om"."organization_id", "om"."email", "om"."code", "om"."status", "om"."answered_at", "om"."invited_at"
           | FROM "organization_invite" "om"
-          | RIGHT JOIN "user" "u" ON "u"."email" = "om"."email" """.stripMargin
+          | INNER JOIN "user" "u" ON "u"."email" = "om"."email" """.stripMargin
       ++ Fragment.const(whereClause) ++
       sql""" ORDER BY "om"."invited_at" DESC OFFSET $offset LIMIT $limit""".stripMargin)
       .query[OrganizationInviteRecord]

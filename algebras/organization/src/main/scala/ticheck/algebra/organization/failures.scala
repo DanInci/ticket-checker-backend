@@ -119,6 +119,19 @@ final case class OrganizationMemberNFA(organizationId: OrganizationID, userId: U
   )
 }
 
+final case class OrganizationMemberUpdateNotAllowedIIA(
+  organizationId: OrganizationID,
+  userId:         UserID,
+) extends InvalidInputAnomaly(
+      s"You are not allow to update user's with id '$userId' role for organization with id '$organizationId'",
+    ) {
+  override val id: AnomalyID = AnomalyIDs.OrganizationMemberUpdateNotAllowedID
+  override val parameters: Anomaly.Parameters = Anomaly.Parameters(
+    "organizationId" -> organizationId.show,
+    "userId"         -> userId.show,
+  )
+}
+
 final case class OrganizationMemberRoleNotAllowedIIA(
   organizationId: OrganizationID,
   userId:         UserID,

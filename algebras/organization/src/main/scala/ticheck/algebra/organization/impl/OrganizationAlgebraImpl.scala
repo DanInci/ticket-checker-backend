@@ -314,7 +314,8 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
   /*
    * - check if organization exists
    * - check if user is member of the organization
-   * - check if role is not set to OrganizationOwner
+   * - check if user is not the owner of the organization
+   * - check if new role is not set to OrganizationOwner
    */
   private def checkUpdateMember(
     id:         OrganizationID,
@@ -326,6 +327,8 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       memberDAO <- organizationMembershipSQL
         .findForOrganizationByUserID(id, userId)
         .flattenOption(OrganizationMemberNFA(id, userId))
+      _ <- (memberDAO.role == OrganizationRole.OrganizationOwner)
+        .ifTrueRaise[ConnectionIO](OrganizationMemberUpdateNotAllowedIIA(id, userId))
       _ <- (definition.role == OrganizationRole.OrganizationOwner)
         .ifTrueRaise[ConnectionIO](OrganizationMemberRoleNotAllowedIIA(id, userId, definition.role))
     } yield memberDAO
