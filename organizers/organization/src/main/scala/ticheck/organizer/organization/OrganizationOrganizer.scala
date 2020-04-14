@@ -27,6 +27,10 @@ trait OrganizationOrganizer[F[_]] {
 
   def deleteOrganization(id: OrganizationID)(implicit ctx: UserAuthCtx): F[Unit]
 
+  def getOrganizationInvites(id: OrganizationID, pagingInfo: PagingInfo, statusFilter: Option[InviteStatus])(
+    implicit ctx:                UserAuthCtx,
+  ): F[List[OrganizationInviteList]]
+
   def invite(id: OrganizationID, invite: OrganizationInviteDefinition)(implicit ctx: UserAuthCtx): F[OrganizationInvite]
 
   def cancelInvite(id: OrganizationID, inviteId: OrganizationInviteID)(implicit ctx: UserAuthCtx): F[Unit]

@@ -55,7 +55,7 @@ final case class OrganizationMembershipForEmailExistsCA(organizationId: Organiza
 final case class OrganizationInviteNFA private (inviteId: Option[OrganizationInviteID], code: Option[InviteCode])
     extends NotFoundAnomaly(
       s"Organization invite with ${if (inviteId.isDefined) "id" else "code"} '${if (inviteId.isDefined) inviteId.get.show
-      else code}' was not found",
+      else code.get}' was not found",
     ) {
 
   def this(inviteId: OrganizationInviteID) { this(Some(inviteId), None) }
@@ -81,7 +81,7 @@ final case class OrganizationInviteIsAnsweredCA(
   status:   InviteStatus,
 ) extends ConflictAnomaly(
       s"Organization invite with ${if (inviteId.isDefined) "id" else "code"} '${if (inviteId.isDefined) inviteId.get.show
-      else code.get}' is already answered. Can not cancel it",
+      else code.get}' is already answered",
     ) {
 
   def this(inviteId: OrganizationInviteID, status: InviteStatus) { this(Some(inviteId), None, status) }

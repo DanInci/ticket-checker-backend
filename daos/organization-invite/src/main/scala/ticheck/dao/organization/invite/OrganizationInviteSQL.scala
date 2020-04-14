@@ -19,7 +19,14 @@ trait OrganizationInviteSQL[H[_]] extends DAOAlgebra[H, OrganizationInviteRecord
     statusFilter: Option[InviteStatus],
   ): H[List[OrganizationInviteRecord]]
 
-  def findForOrganizationByEmail(id: OrganizationID, email: Email): H[Option[OrganizationInviteRecord]]
+  def getAllForOrganization(
+    organizationId: OrganizationID,
+    offset:         Offset,
+    limit:          Limit,
+    statusFilter:   Option[InviteStatus],
+  ): H[List[OrganizationInviteRecord]]
+
+  def findForOrganizationByEmail(id: OrganizationID, email: Email): H[List[OrganizationInviteRecord]]
 
   def findByInvitationCode(code: InviteCode): H[Option[OrganizationInviteRecord]]
 

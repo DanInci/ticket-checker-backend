@@ -49,6 +49,13 @@ final private[organization] case class OrganizationOrganizerImpl[F[_]](
       _ <- organizationAlgebra.deleteById(id)
     } yield ()
 
+  override def getOrganizationInvites(id: OrganizationID, pagingInfo: PagingInfo, statusFilter: Option[InviteStatus])(
+    implicit ctx:                         UserAuthCtx,
+  ): F[List[OrganizationInviteList]] =
+    for {
+      invites <- organizationAlgebra.getOrganizationInvites(id, pagingInfo, statusFilter)
+    } yield invites
+
   override def invite(id: OrganizationID, invite: OrganizationInviteDefinition)(
     implicit ctx:         UserAuthCtx,
   ): F[OrganizationInvite] =

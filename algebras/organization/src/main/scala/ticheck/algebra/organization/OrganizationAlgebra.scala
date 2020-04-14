@@ -28,6 +28,12 @@ trait OrganizationAlgebra[F[_]] {
     statusFilter: Option[InviteStatus],
   ): F[List[OrganizationInviteList]]
 
+  def getOrganizationInvites(
+    organizationId: OrganizationID,
+    pagingInfo:     PagingInfo,
+    statusFilter:   Option[InviteStatus],
+  ): F[List[OrganizationInviteList]]
+
   def sendInvite(id: OrganizationID, invite: OrganizationInviteDefinition): F[OrganizationInvite]
 
   def cancelInvite(id: OrganizationID, inviteId: OrganizationInviteID): F[Unit]

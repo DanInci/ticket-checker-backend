@@ -1,7 +1,7 @@
 package ticheck.rest.routes
 
 import io.chrisdavenport.fuuid.http4s.FUUIDVar
-import org.http4s.QueryParamDecoder
+import org.http4s.{ParseFailure, QueryParamDecoder, QueryParameterValue}
 import org.http4s.dsl.Http4sDsl
 import ticheck.{OrganizationID, OrganizationInviteID, PagingInfo, UserID}
 import ticheck.algebra.organization.models._
@@ -26,7 +26,15 @@ final private[rest] class OrganizationRoutes[F[_]](
   implicit val inviteCodeQueryParamMatcher: QueryParamDecoder[InviteCode] =
     phantomTypeQueryParamDecoder[F, String, InviteCode.Tag]
 
-  object InviteCodeQueryParamMatcher extends QueryParamDecoderMatcher[InviteCode]("code")
+  implicit val inviteStatusQueryParamDecoder: QueryParamDecoder[InviteStatus] =
+    (value: QueryParameterValue) =>
+      InviteStatus
+        .fromString(value.value)
+        .leftMap(t => ParseFailure("Query param decoding failed", t.getMessage))
+        .toValidatedNel
+
+  object InviteCodeQueryParamMatcher   extends QueryParamDecoderMatcher[InviteCode]("code")
+  object InviteStatusQueryParamMatcher extends OptionalQueryParamDecoderMatcher[InviteStatus]("status")
 
   private val organizationRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case (req @ POST -> Root / `organizations-route`) as user =>
@@ -63,14 +71,22 @@ final private[rest] class OrganizationRoutes[F[_]](
   }
 
   private val organizationInviteRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
-    case (req @ POST -> Root / `organizations-route` / FUUIDVar(orgId) / "invite") as user =>
+    case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `invites-route` :? PageNumberMatcher(pageNumber)
+          +& PageSizeMatcher(pageSize) +& InviteStatusQueryParamMatcher(inviteStatus) as user =>
+      for {
+        invites <- organizationOrganizer
+          .getOrganizationInvites(OrganizationID.spook(orgId), PagingInfo(pageNumber, pageSize), inviteStatus)(user)
+        resp <- Ok(invites)
+      } yield resp
+
+    case (req @ POST -> Root / `organizations-route` / FUUIDVar(orgId) / `invites-route`) as user =>
       for {
         definition <- req.as[OrganizationInviteDefinition]
         invite     <- organizationOrganizer.invite(OrganizationID.spook(orgId), definition)(user)
         resp       <- Created(invite)
       } yield resp
 
-    case DELETE -> Root / `organizations-route` / FUUIDVar(orgId) / "invite" / FUUIDVar(inviteId) as user =>
+    case DELETE -> Root / `organizations-route` / FUUIDVar(orgId) / `invites-route` / FUUIDVar(inviteId) as user =>
       for {
         _    <- organizationOrganizer.cancelInvite(OrganizationID.spook(orgId), OrganizationInviteID.spook(inviteId))(user)
         resp <- NoContent()
@@ -82,7 +98,7 @@ final private[rest] class OrganizationRoutes[F[_]](
         resp <- Ok()
       } yield resp
 
-    case POST -> Root / `organizations-route` / FUUIDVar(orgId) / "invite" / FUUIDVar(inviteId) / "accept" as user =>
+    case POST -> Root / `organizations-route` / FUUIDVar(orgId) / `invites-route` / FUUIDVar(inviteId) / "accept" as user =>
       for {
         _ <- organizationOrganizer.setInviteStatus(
           OrganizationID.spook(orgId),
@@ -92,7 +108,7 @@ final private[rest] class OrganizationRoutes[F[_]](
         resp <- Ok()
       } yield resp
 
-    case POST -> Root / `organizations-route` / FUUIDVar(orgId) / "invite" / FUUIDVar(inviteId) / "decline" as user =>
+    case POST -> Root / `organizations-route` / FUUIDVar(orgId) / `invites-route` / FUUIDVar(inviteId) / "decline" as user =>
       for {
         _ <- organizationOrganizer.setInviteStatus(
           OrganizationID.spook(orgId),

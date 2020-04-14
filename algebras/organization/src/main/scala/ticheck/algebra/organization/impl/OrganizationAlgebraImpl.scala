@@ -95,6 +95,18 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
     } yield invites
   }
 
+  override def getOrganizationInvites(
+    organizationId: OrganizationID,
+    pagingInfo:     PagingInfo,
+    statusFilter:   Option[InviteStatus],
+  ): F[List[OrganizationInviteList]] = transact {
+    for {
+      inviteDaos <- organizationInviteSQL
+        .getAllForOrganization(organizationId, pagingInfo.getOffset, pagingInfo.getLimit, statusFilter)
+      invites = inviteDaos.map(OrganizationInviteList.fromDAO)
+    } yield invites
+  }
+
   override def sendInvite(id: OrganizationID, definition: OrganizationInviteDefinition): F[OrganizationInvite] =
     transact {
       for {
@@ -245,7 +257,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       _ <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
       _ <- organizationInviteSQL
         .findForOrganizationByEmail(id, definition.email)
-        .map(_.filter(_.status == InvitePending))
+        .map(_.filter(_.status == InvitePending).headOption)
         .ifSomeRaise(OrganizationInviteForEmailExistsCA(id, definition.email))
       _ <- organizationMembershipSQL
         .findForOrganizationByEmail(id, definition.email)
@@ -273,7 +285,6 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
    * - check if invite is destined for the email
    * - check if invitation is not answered
    * - check if user with email is not already a member of the organization
-   * - check if
    */
   private def checkJoin(inviteCode: InviteCode)(implicit email: Email): ConnectionIO[OrganizationInviteRecord] =
     for {

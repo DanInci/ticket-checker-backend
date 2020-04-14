@@ -18,6 +18,7 @@ package object rest {
   lazy val `organizations-route` = "organizations"
   lazy val `tickets-route`       = "tickets"
   lazy val `users-route`         = "users"
+  lazy val `invites-route`       = "invites"
   lazy val `statistics-route`    = "statistics"
 
 }

@@ -37,13 +37,32 @@ final private[invite] class OrganizationInviteSQLImpl private (override val time
       .to[List]
   }
 
+  override def getAllForOrganization(
+    organizationId: OrganizationID,
+    offset:         Offset,
+    limit:          Limit,
+    statusFilter:   Option[InviteStatus],
+  ): ConnectionIO[List[OrganizationInviteRecord]] = {
+    val whereClause = statusFilter match {
+      case None         => s"""WHERE "organization_id"='$organizationId'"""
+      case Some(status) => s"""WHERE "organization_id"='$organizationId' AND "status"='${status.asString}'"""
+    }
+
+    (sql"""SELECT "id", "organization_id", "email", "code", "status", "answered_at", "invited_at"
+          | FROM "organization_invite"""".stripMargin
+      ++ Fragment.const(whereClause) ++
+      sql""" ORDER BY "invited_at" DESC OFFSET $offset LIMIT $limit""".stripMargin)
+      .query[OrganizationInviteRecord]
+      .to[List]
+  }
+
   override def findForOrganizationByEmail(
     id:    OrganizationID,
     email: Email,
-  ): ConnectionIO[Option[OrganizationInviteRecord]] =
+  ): ConnectionIO[List[OrganizationInviteRecord]] =
     sql"""SELECT "id", "organization_id", "email", "code", "status", "answered_at", "invited_at"
          | FROM "organization_invite"
-         | WHERE "organization_id"=$id AND "email"=$email""".stripMargin.query[OrganizationInviteRecord].option
+         | WHERE "organization_id"=$id AND "email"=$email""".stripMargin.query[OrganizationInviteRecord].to[List]
 
   override def findByInvitationCode(code: InviteCode): ConnectionIO[Option[OrganizationInviteRecord]] =
     sql"""SELECT "id", "organization_id", "email", "code", "status", "answered_at", "invited_at"

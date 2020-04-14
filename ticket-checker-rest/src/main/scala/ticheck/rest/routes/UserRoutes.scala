@@ -52,7 +52,7 @@ final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserO
         resp <- NoContent()
       } yield resp
 
-    case GET -> Root / `users-route` / FUUIDVar(uid) / "invites" :? PageNumberMatcher(pageNumber)
+    case GET -> Root / `users-route` / FUUIDVar(uid) / `invites-route` :? PageNumberMatcher(pageNumber)
           +& PageSizeMatcher(pageSize) +& InviteStatusQueryParamMatcher(inviteStatus) as user =>
       for {
         invites <- userOrganizer.getUserInvites(UserID.spook(uid), PagingInfo(pageNumber, pageSize), inviteStatus)(user)
