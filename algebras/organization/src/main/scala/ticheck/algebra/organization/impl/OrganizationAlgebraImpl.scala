@@ -328,7 +328,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
         .findForOrganizationByUserID(id, userId)
         .flattenOption(OrganizationMemberNFA(id, userId))
       _ <- (memberDAO.role == OrganizationRole.OrganizationOwner)
-        .ifTrueRaise[ConnectionIO](OrganizationMemberUpdateNotAllowedIIA(id, userId))
+        .ifTrueRaise[ConnectionIO](OrganizationMemberChangesNotAllowedIIA(id, userId))
       _ <- (definition.role == OrganizationRole.OrganizationOwner)
         .ifTrueRaise[ConnectionIO](OrganizationMemberRoleNotAllowedIIA(id, userId, definition.role))
     } yield memberDAO
@@ -336,6 +336,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
   /*
    * - check if organization exists
    * - check if user is member of the organization
+   * * - check if user is not the owner of the organization
    */
   private def checkDeleteMember(id: OrganizationID, userId: UserID): ConnectionIO[OrganizationMembershipRecord] =
     for {
@@ -343,6 +344,8 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       memberDAO <- organizationMembershipSQL
         .findForOrganizationByUserID(id, userId)
         .flattenOption(OrganizationMemberNFA(id, userId))
+      _ <- (memberDAO.role == OrganizationRole.OrganizationOwner)
+        .ifTrueRaise[ConnectionIO](OrganizationMemberChangesNotAllowedIIA(id, userId))
     } yield memberDAO
 
 }
