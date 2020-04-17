@@ -23,7 +23,7 @@ object IntervalType {
 
   private val HourlyString = "HOURLY"
   private val DailyString  = "DAILY"
-  private val WeeklyString = "WEEKYL"
+  private val WeeklyString = "WEEKLY"
 
   final object HourlyInterval extends IntervalType {
     override def asString: String = HourlyString
