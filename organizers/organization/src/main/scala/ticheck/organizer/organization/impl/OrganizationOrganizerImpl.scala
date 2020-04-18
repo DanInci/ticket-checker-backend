@@ -22,7 +22,7 @@ final private[organization] case class OrganizationOrganizerImpl[F[_]](
   override def getOrganizationList(pagingInfo: PagingInfo)(implicit ctx: UserAuthCtx): F[List[OrganizationList]] =
     for {
       viewableOrgIds <- ctx.organizations.map(_.id).pure[F]
-      organizations  <- organizationAlgebra.getAll(Some(viewableOrgIds), pagingInfo)
+      organizations  <- organizationAlgebra.getAll(Some(viewableOrgIds), pagingInfo)(ctx.userId)
     } yield organizations
 
   override def registerOrganization(definition: OrganizationDefinition)(

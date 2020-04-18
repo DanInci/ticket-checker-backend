@@ -12,7 +12,9 @@ import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
   */
 trait OrganizationAlgebra[F[_]] {
 
-  def getAll(filter: Option[List[OrganizationID]], pagingInfo: PagingInfo): F[List[OrganizationList]]
+  def getAll(filter: Option[List[OrganizationID]], pagingInfo: PagingInfo)(
+    implicit userId: UserID,
+  ): F[List[OrganizationList]]
 
   def create(definition: OrganizationDefinition)(implicit createdBy: UserID): F[OrganizationProfile]
 

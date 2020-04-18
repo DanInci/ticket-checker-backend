@@ -30,11 +30,17 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
 )(implicit F:                Async[F], transactor: Transactor[F])
     extends OrganizationAlgebra[F] with DBOperationsAlgebra[F] {
 
-  override def getAll(filter: Option[List[OrganizationID]], pagingInfo: PagingInfo): F[List[OrganizationList]] =
+  override def getAll(filter: Option[List[OrganizationID]], pagingInfo: PagingInfo)(
+    implicit userId:          UserID,
+  ): F[List[OrganizationList]] =
     transact {
       for {
         organizationDAOs <- organizationSQL.getAll(filter, pagingInfo.getOffset, pagingInfo.getLimit)
-        organizations = organizationDAOs.map(OrganizationList.fromDAO)
+        organizations <- organizationDAOs.traverse { o =>
+          for {
+            om <- organizationMembershipSQL.findForOrganizationByUserID(o.id, userId)
+          } yield OrganizationList.fromDAO(o, om)
+        }
       } yield organizations
     }
 

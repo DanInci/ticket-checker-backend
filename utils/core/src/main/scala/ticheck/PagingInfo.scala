@@ -15,7 +15,7 @@ object PagingInfo {
   lazy val defaultPagingInfo: PagingInfo = new PagingInfo(PageNumber(0), defaultPageSize)
 
   def apply(pageNumber: Option[PageNumber], pageSize: Option[PageSize]): PagingInfo = {
-    val correctedPageNumber = pageNumber.getOrElse(PageNumber(1))
+    val correctedPageNumber = pageNumber.map(p => if (p < 1) PageNumber(1) else p).getOrElse(PageNumber(1))
     val correctedPageSize = pageSize
       .map(ps => if (ps < 0) defaultPageSize else if (ps > 50) maxPageSize else PageSize(ps))
       .getOrElse(defaultPageSize)

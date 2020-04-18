@@ -75,7 +75,7 @@ final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserO
         resp          <- Ok(loginResponse)
       } yield resp
 
-    case GET -> "health" => Ok()
+    case GET -> Root / "health" => Ok()
   }
 
   val authedRoutes: UserAuthCtxRoutes[F] = usersRoutes
