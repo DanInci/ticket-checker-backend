@@ -1,8 +1,10 @@
 package ticheck.algebra.organization.models
 
-import ticheck.OrganizationInviteID
+import ticheck.{OrganizationID, OrganizationInviteID}
+import ticheck.dao.organization.OrganizationName
 import ticheck.dao.organization.invite.models.OrganizationInviteRecord
 import ticheck.dao.organization.invite.{InviteStatus, InvitedAt}
+import ticheck.dao.organization.models.OrganizationRecord
 
 /**
   *
@@ -11,9 +13,11 @@ import ticheck.dao.organization.invite.{InviteStatus, InvitedAt}
   *
   */
 final case class OrganizationInviteList(
-  id:        OrganizationInviteID,
-  status:    InviteStatus,
-  invitedAt: InvitedAt,
+  id:               OrganizationInviteID,
+  organizationId:   OrganizationID,
+  organizationName: OrganizationName,
+  status:           InviteStatus,
+  invitedAt:        InvitedAt,
 )
 
 object OrganizationInviteList {
@@ -21,9 +25,11 @@ object OrganizationInviteList {
 
   implicit val jsonCodec: Codec[OrganizationInviteList] = derive.codec[OrganizationInviteList]
 
-  def fromDAO(oi: OrganizationInviteRecord): OrganizationInviteList =
+  def fromDAO(oi: OrganizationInviteRecord, o: OrganizationRecord): OrganizationInviteList =
     OrganizationInviteList(
       oi.id,
+      o.id,
+      o.name,
       oi.status,
       oi.invitedAt,
     )

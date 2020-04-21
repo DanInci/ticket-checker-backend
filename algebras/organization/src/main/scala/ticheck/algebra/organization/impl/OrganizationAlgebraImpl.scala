@@ -66,21 +66,25 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
           JoinedAt.spook(now),
         )
         _ <- organizationMembershipSQL.insert(orgMembershipDAO)
-      } yield OrganizationProfile.fromDAO(orgDAO)
+      } yield OrganizationProfile.fromDAO(orgDAO, Some(orgMembershipDAO))
     }
 
-  override def getById(id: OrganizationID): F[OrganizationProfile] = transact {
+  override def getById(id: OrganizationID)(implicit userId: UserID): F[OrganizationProfile] = transact {
     for {
-      orgDAO <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
-    } yield OrganizationProfile.fromDAO(orgDAO)
+      orgDAO    <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
+      orgMemDAO <- organizationMembershipSQL.findForOrganizationByUserID(id, userId)
+    } yield OrganizationProfile.fromDAO(orgDAO, orgMemDAO)
   }
 
-  override def updateById(id: OrganizationID, definition: OrganizationDefinition): F[OrganizationProfile] = transact {
+  override def updateById(id: OrganizationID, definition: OrganizationDefinition)(
+    implicit userId:          UserID,
+  ): F[OrganizationProfile] = transact {
     for {
       currentDAO <- checkUpdate(id, definition)
       newDAO = currentDAO.copy(name = definition.name)
-      _ <- organizationSQL.update(newDAO)
-    } yield OrganizationProfile.fromDAO(newDAO)
+      _         <- organizationSQL.update(newDAO)
+      orgMemDAO <- organizationMembershipSQL.findForOrganizationByUserID(id, userId)
+    } yield OrganizationProfile.fromDAO(newDAO, orgMemDAO)
   }
 
   override def deleteById(id: OrganizationID): F[Unit] = transact {
@@ -97,7 +101,11 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
   ): F[List[OrganizationInviteList]] = transact {
     for {
       inviteDaos <- organizationInviteSQL.getAllForUser(userId, pagingInfo.getOffset, pagingInfo.getLimit, statusFilter)
-      invites = inviteDaos.map(OrganizationInviteList.fromDAO)
+      invites <- inviteDaos.traverse { invDAO =>
+        for {
+          orgDAO <- organizationSQL.retrieve(invDAO.organizationId)
+        } yield OrganizationInviteList.fromDAO(invDAO, orgDAO)
+      }
     } yield invites
   }
 
@@ -109,14 +117,18 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
     for {
       inviteDaos <- organizationInviteSQL
         .getAllForOrganization(organizationId, pagingInfo.getOffset, pagingInfo.getLimit, statusFilter)
-      invites = inviteDaos.map(OrganizationInviteList.fromDAO)
+      invites <- inviteDaos.traverse { invDAO =>
+        for {
+          orgDAO <- organizationSQL.retrieve(invDAO.organizationId)
+        } yield OrganizationInviteList.fromDAO(invDAO, orgDAO)
+      }
     } yield invites
   }
 
   override def sendInvite(id: OrganizationID, definition: OrganizationInviteDefinition): F[OrganizationInvite] =
     transact {
       for {
-        _          <- checkSendInvite(id, definition)
+        orgDAO     <- checkSendInvite(id, definition)
         inviteId   <- OrganizationInviteID.generate[ConnectionIO]
         random     <- SecureRandom.newSecureRandom[ConnectionIO]
         inviteCode <- generateInviteCode[ConnectionIO](implicitly, random)
@@ -131,7 +143,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
           now,
         )
         _ <- organizationInviteSQL.insert(inviteDAO)
-      } yield OrganizationInvite.fromDAO(inviteDAO)
+      } yield OrganizationInvite.fromDAO(inviteDAO, orgDAO)
     }
 
   override def cancelInvite(id: OrganizationID, inviteId: OrganizationInviteID): F[Unit] = transact {
@@ -145,7 +157,8 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
     for {
       inviteDAO <- checkJoin(inviteCode)
       orgDAO    <- invitationAccepted(inviteDAO)
-    } yield OrganizationProfile.fromDAO(orgDAO)
+      orgMemDAO <- organizationMembershipSQL.findForOrganizationByUserID(orgDAO.id, userId)
+    } yield OrganizationProfile.fromDAO(orgDAO, orgMemDAO)
   }
 
   override def setInviteStatus(
@@ -258,9 +271,12 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
    * - check if invite for email exists and is still pending
    * - check if user with email is not already a member of the organization
    */
-  private def checkSendInvite(id: OrganizationID, definition: OrganizationInviteDefinition): ConnectionIO[Unit] =
+  private def checkSendInvite(
+    id:         OrganizationID,
+    definition: OrganizationInviteDefinition,
+  ): ConnectionIO[OrganizationRecord] =
     for {
-      _ <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
+      orgDAO <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
       _ <- organizationInviteSQL
         .findForOrganizationByEmail(id, definition.email)
         .map(_.filter(_.status == InvitePending).headOption)
@@ -268,7 +284,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       _ <- organizationMembershipSQL
         .findForOrganizationByEmail(id, definition.email)
         .ifSomeRaise(OrganizationMembershipForEmailExistsCA(id, definition.email))
-    } yield ()
+    } yield orgDAO
 
   /*
    * - check if organization with id exists

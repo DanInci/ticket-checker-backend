@@ -73,9 +73,9 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
 
   override def findByUserID(userId: UserID, category: Option[TicketCategory]): ConnectionIO[List[TicketRecord]] = {
     val whereClause = category match {
-      case None                                 => s"""WHERE "sold_by_id"=$userId OR "validated_by_id"=$userId"""
-      case Some(TicketCategory.SoldTicket)      => s"""WHERE "sold_by_id"=$userId"""
-      case Some(TicketCategory.ValidatedTicket) => s"""WHERE "validated_by_id"=$userId"""
+      case None                                 => s"""WHERE "sold_by_id"='$userId' OR "validated_by_id"='$userId'"""
+      case Some(TicketCategory.SoldTicket)      => s"""WHERE "sold_by_id"='$userId'"""
+      case Some(TicketCategory.ValidatedTicket) => s"""WHERE "validated_by_id"='$userId'"""
     }
 
     (sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"

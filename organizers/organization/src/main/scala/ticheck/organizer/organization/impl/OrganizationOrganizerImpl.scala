@@ -34,14 +34,14 @@ final private[organization] case class OrganizationOrganizerImpl[F[_]](
 
   override def getOrganizationProfile(id: OrganizationID)(implicit ctx: UserAuthCtx): F[OrganizationProfile] =
     for {
-      organization <- organizationAlgebra.getById(id)
+      organization <- organizationAlgebra.getById(id)(ctx.userId)
     } yield organization
 
   override def updateOrganizationProfile(id: OrganizationID, definition: OrganizationDefinition)(
     implicit ctx:                            UserAuthCtx,
   ): F[OrganizationProfile] =
     for {
-      organization <- organizationAlgebra.updateById(id, definition)
+      organization <- organizationAlgebra.updateById(id, definition)(ctx.userId)
     } yield organization
 
   override def deleteOrganization(id: OrganizationID)(implicit ctx: UserAuthCtx): F[Unit] =

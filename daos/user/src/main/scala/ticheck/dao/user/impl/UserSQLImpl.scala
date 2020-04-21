@@ -43,7 +43,6 @@ final private[user] class UserSQLImpl private (override val timeAlgebra: TimeAlg
          | SET "email"=${e.email}, "hashed_password"=${e.hashedPassword}, "name"=${e.name}, "created_at"=${e.createdAt}, "edited_at"=${e.editedAt}
          | WHERE "id"=${e.id}""".stripMargin.update.withUniqueGeneratedKeys[UserRecord](
       "id",
-      "organization_id",
       "email",
       "hashed_password",
       "name",

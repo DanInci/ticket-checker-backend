@@ -2,6 +2,7 @@ package ticheck.algebra.organization.models
 
 import ticheck.{CreatedAt, OrganizationID}
 import ticheck.dao.organization._
+import ticheck.dao.organization.membership.models.OrganizationMembershipRecord
 import ticheck.dao.organization.models.OrganizationRecord
 
 /**
@@ -11,9 +12,10 @@ import ticheck.dao.organization.models.OrganizationRecord
   *
   */
 final case class OrganizationProfile(
-  id:        OrganizationID,
-  name:      OrganizationName,
-  createdAt: CreatedAt,
+  id:         OrganizationID,
+  name:       OrganizationName,
+  membership: Option[Membership],
+  createdAt:  CreatedAt,
 )
 
 object OrganizationProfile {
@@ -21,10 +23,11 @@ object OrganizationProfile {
 
   implicit val jsonCodec: Codec[OrganizationProfile] = derive.codec[OrganizationProfile]
 
-  def fromDAO(o: OrganizationRecord): OrganizationProfile =
+  def fromDAO(o: OrganizationRecord, om: Option[OrganizationMembershipRecord]): OrganizationProfile =
     OrganizationProfile(
       o.id,
       o.name,
+      om.map(Membership.fromDAO),
       o.createdAt,
     )
 

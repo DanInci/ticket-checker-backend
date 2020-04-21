@@ -18,9 +18,13 @@ trait OrganizationAlgebra[F[_]] {
 
   def create(definition: OrganizationDefinition)(implicit createdBy: UserID): F[OrganizationProfile]
 
-  def getById(id: OrganizationID): F[OrganizationProfile]
+  def getById(id:    OrganizationID)(
+    implicit userId: UserID,
+  ): F[OrganizationProfile]
 
-  def updateById(id: OrganizationID, definition: OrganizationDefinition): F[OrganizationProfile]
+  def updateById(id: OrganizationID, definition: OrganizationDefinition)(
+    implicit userId: UserID,
+  ): F[OrganizationProfile]
 
   def deleteById(id: OrganizationID): F[Unit]
 
