@@ -32,7 +32,8 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
       case _ => ""
     }
     val searchValWC = searchVal.map(
-      s => s"""("sold_to" LIKE '$s%' OR "sold_by_name" LIKE '$s%' OR "validated_by_name" LIKE '$s%')""",
+      s =>
+        s"""(UPPER("sold_to") LIKE UPPER('$s%') OR UPPER("sold_by_name") LIKE UPPER('$s%') OR UPPER("validated_by_name") LIKE UPPER('$s%'))""",
     )
     val WCs         = List(organizationIdWC, byCategoryWC, searchValWC).flatten
     val whereClause = WCs.mkString("WHERE ", " AND ", "")
@@ -80,8 +81,9 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
     val searchValWC = searchVal.map(
       s =>
         byUserId match {
-          case Some(_) => s""""sold_to" LIKE '$s%'"""
-          case None    => s"""("sold_to" LIKE '$s%' OR "sold_by_name" LIKE '$s%' OR "validated_by_name" LIKE '$s%')"""
+          case Some(_) => s"""UPPER("sold_to") LIKE UPPER('$s%')"""
+          case None =>
+            s"""(UPPER("sold_to") LIKE UPPER('$s%') OR UPPER("sold_by_name") LIKE UPPER('$s%') OR UPPER("validated_by_name") LIKE UPPER('$s%'))"""
         },
     )
     val WCs         = List(organizationIdWC, byCategoryWC, byUserIdWC, searchValWC).flatten

@@ -32,7 +32,7 @@ final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (ove
       s""""om"."role"='$role'  """
     }
     val searchValWC = searchValue.map(
-      s => s""""u"."name" LIKE '$s%'""",
+      s => s"""UPPER("u"."name") LIKE UPPER('$s%')""",
     )
     val WCs         = List(organizationIdWC, byRoleWC, searchValWC).flatten
     val whereClause = WCs.mkString("WHERE ", " AND ", "")
@@ -56,7 +56,7 @@ final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (ove
       s""""om"."role"='$role'  """
     }
     val searchValWC = searchValue.map(
-      s => s""""u"."name" LIKE '$s%'""",
+      s => s"""UPPER("u"."name") LIKE UPPER('$s%')""",
     )
     val WCs         = List(organizationIdWC, byRoleWC, searchValWC).flatten
     val whereClause = WCs.mkString("WHERE ", " AND ", "")
