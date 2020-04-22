@@ -15,4 +15,10 @@ package object membership {
   object JoinedAt extends PhantomType[OffsetDateTime]
   type JoinedAt = JoinedAt.Type
 
+  object SoldTicketsNo extends PhantomType[Int]
+  type SoldTicketsNo = SoldTicketsNo.Type
+
+  object ValidatedTicketsNo extends PhantomType[Int]
+  type ValidatedTicketsNo = ValidatedTicketsNo.Type
+
 }

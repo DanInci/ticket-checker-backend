@@ -27,4 +27,8 @@ trait OrganizationMembershipSQL[H[_]] extends DAOAlgebra[H, OrganizationMembersh
 
   def getByUserID(userId: UserID): H[List[OrganizationMembershipRecord]]
 
+  def getSoldTicketsCountFor(organizationId: OrganizationID, userId: UserID): H[SoldTicketsNo]
+
+  def getValidatedTicketsCountFor(organizationId: OrganizationID, userId: UserID): H[ValidatedTicketsNo]
+
 }

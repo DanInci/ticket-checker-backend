@@ -165,16 +165,17 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
     id:              OrganizationID,
     inviteId:        OrganizationInviteID,
     status:          InviteStatus,
-  )(implicit userId: UserID, email: Email): F[Unit] =
+  )(implicit userId: UserID, email: Email): F[OrganizationProfile] =
     transact {
       for {
-        inviteDAO <- checkSetInviteStatus(id, inviteId)
+        (orgDAO, inviteDAO) <- checkSetInviteStatus(id, inviteId)
         _ <- status match {
           case InviteAccepted => invitationAccepted(inviteDAO).void
           case InviteDeclined => invitationDeclined(inviteDAO)
           case _              => ConnectionIO.unit
         }
-      } yield ()
+        membership <- organizationMembershipSQL.findForOrganizationByUserID(id, userId)
+      } yield OrganizationProfile.fromDAO(orgDAO, membership)
     }
 
   override def getMembersList(id: OrganizationID, pagingInfo: PagingInfo): F[List[OrganizationMemberList]] = transact {
@@ -185,17 +186,31 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
     } yield members
   }
 
+  override def getOrganizationMemberById(id: OrganizationID, userId: UserID): F[OrganizationMember] = transact {
+    for {
+      orgDAO <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
+      orgMemDAO <- organizationMembershipSQL
+        .findForOrganizationByUserID(id, userId)
+        .flattenOption(OrganizationMemberNFA(id, userId))
+      userDAO            <- userSQL.retrieve(userId)
+      soldTicketsNo      <- organizationMembershipSQL.getSoldTicketsCountFor(id, userId)
+      validatedTicketsNo <- organizationMembershipSQL.getValidatedTicketsCountFor(id, userId)
+    } yield OrganizationMember.fromDAO(orgDAO, userDAO, orgMemDAO, soldTicketsNo, validatedTicketsNo)
+  }
+
   override def updateMemberByUserID(
     id:         OrganizationID,
     userId:     UserID,
     definition: OrganizationMemberDefinition,
   ): F[OrganizationMember] = transact {
     for {
-      memberDAO <- checkUpdateMember(id, userId, definition)
+      (orgDAO, memberDAO) <- checkUpdateMember(id, userId, definition)
       updatedMemberDAO = memberDAO.copy(role = definition.role)
-      _       <- organizationMembershipSQL.update(updatedMemberDAO)
-      userDAO <- userSQL.retrieve(memberDAO.userId)
-    } yield OrganizationMember.fromDAO(userDAO, updatedMemberDAO)
+      _                  <- organizationMembershipSQL.update(updatedMemberDAO)
+      userDAO            <- userSQL.retrieve(memberDAO.userId)
+      soldTicketsNo      <- organizationMembershipSQL.getSoldTicketsCountFor(id, userId)
+      validatedTicketsNo <- organizationMembershipSQL.getValidatedTicketsCountFor(id, userId)
+    } yield OrganizationMember.fromDAO(orgDAO, userDAO, memberDAO, soldTicketsNo, validatedTicketsNo)
   }
 
   override def removeMemberByUserID(id: OrganizationID, userId: UserID): F[Unit] = transact {
@@ -279,7 +294,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       orgDAO <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
       _ <- organizationInviteSQL
         .findForOrganizationByEmail(id, definition.email)
-        .map(_.filter(_.status == InvitePending).headOption)
+        .map(_.find(_.status == InvitePending))
         .ifSomeRaise(OrganizationInviteForEmailExistsCA(id, definition.email))
       _ <- organizationMembershipSQL
         .findForOrganizationByEmail(id, definition.email)
@@ -330,9 +345,9 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
    */
   private def checkSetInviteStatus(id: OrganizationID, inviteId: OrganizationInviteID)(
     implicit email:                    Email,
-  ): ConnectionIO[OrganizationInviteRecord] =
+  ): ConnectionIO[(OrganizationRecord, OrganizationInviteRecord)] =
     for {
-      _ <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
+      orgDAO <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
       inviteDAO <- organizationInviteSQL
         .find(inviteId)
         .map(_.filter(inv => inv.organizationId == id && inv.email == email))
@@ -342,7 +357,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       _ <- organizationMembershipSQL
         .findForOrganizationByEmail(inviteDAO.organizationId, inviteDAO.email)
         .ifSomeRaise(OrganizationMembershipForEmailExistsCA(inviteDAO.organizationId, inviteDAO.email))
-    } yield inviteDAO
+    } yield (orgDAO, inviteDAO)
 
   /*
    * - check if organization exists
@@ -354,9 +369,9 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
     id:         OrganizationID,
     userId:     UserID,
     definition: OrganizationMemberDefinition,
-  ): ConnectionIO[OrganizationMembershipRecord] =
+  ): ConnectionIO[(OrganizationRecord, OrganizationMembershipRecord)] =
     for {
-      _ <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
+      orgDAO <- organizationSQL.find(id).flattenOption(OrganizationNFA(id))
       memberDAO <- organizationMembershipSQL
         .findForOrganizationByUserID(id, userId)
         .flattenOption(OrganizationMemberNFA(id, userId))
@@ -364,7 +379,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
         .ifTrueRaise[ConnectionIO](OrganizationMemberChangesNotAllowedIIA(id, userId))
       _ <- (definition.role == OrganizationRole.OrganizationOwner)
         .ifTrueRaise[ConnectionIO](OrganizationMemberRoleNotAllowedIIA(id, userId, definition.role))
-    } yield memberDAO
+    } yield (orgDAO, memberDAO)
 
   /*
    * - check if organization exists

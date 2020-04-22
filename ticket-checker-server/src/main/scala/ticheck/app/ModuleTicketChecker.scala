@@ -1,7 +1,6 @@
 package ticheck.app
 
 import org.http4s.HttpRoutes
-import org.http4s.dsl.Http4sDsl
 import ticheck.algebra.organization.ModuleOrganizationAlgebra
 import ticheck.algebra.ticket.ModuleTicketAlgebra
 import ticheck.algebra.user.ModuleUserAlgebra

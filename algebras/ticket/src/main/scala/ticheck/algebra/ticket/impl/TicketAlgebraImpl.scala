@@ -154,7 +154,7 @@ final private[ticket] class TicketAlgebraImpl[F[_]] private (
         case WeeklyInterval => finalDateTime.`with`(LocalTime.MAX).`with`(DayOfWeek.SUNDAY)
       }
       statistics: List[TicketStatistic] <- List
-        .range(howMany, 0, -1)
+        .range(howMany - 1, -1, -1)
         .traverse(
           no => {
             for {

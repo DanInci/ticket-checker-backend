@@ -39,11 +39,13 @@ trait OrganizationOrganizer[F[_]] {
 
   def setInviteStatus(id: OrganizationID, inviteId: OrganizationInviteID, status: InviteStatus)(
     implicit ctx:         UserAuthCtx,
-  ): F[Unit]
+  ): F[OrganizationProfile]
 
   def getOrganizationMemberList(id: OrganizationID, pagingInfo: PagingInfo)(
     implicit ctx:                   UserAuthCtx,
   ): F[List[OrganizationMemberList]]
+
+  def getOrganizationMemberById(id: OrganizationID, userId: UserID)(implicit ctx: UserAuthCtx): F[OrganizationMember]
 
   def updateOrganizationMember(
     id:           OrganizationID,

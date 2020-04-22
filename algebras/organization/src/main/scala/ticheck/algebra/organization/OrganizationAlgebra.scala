@@ -49,9 +49,11 @@ trait OrganizationAlgebra[F[_]] {
   def setInviteStatus(id: OrganizationID, inviteId: OrganizationInviteID, status: InviteStatus)(
     implicit userId:      UserID,
     email:                Email,
-  ): F[Unit]
+  ): F[OrganizationProfile]
 
   def getMembersList(id: OrganizationID, pagingInfo: PagingInfo): F[List[OrganizationMemberList]]
+
+  def getOrganizationMemberById(id: OrganizationID, userId: UserID): F[OrganizationMember]
 
   def updateMemberByUserID(
     id:         OrganizationID,

@@ -94,18 +94,18 @@ final private[rest] class OrganizationRoutes[F[_]](
 
     case GET -> Root / `organizations-route` / "join" :? InviteCodeQueryParamMatcher(code) as user =>
       for {
-        _    <- organizationOrganizer.join(code)(user)
-        resp <- Ok()
+        organization <- organizationOrganizer.join(code)(user)
+        resp         <- Ok(organization)
       } yield resp
 
     case POST -> Root / `organizations-route` / FUUIDVar(orgId) / `invites-route` / FUUIDVar(inviteId) / "accept" as user =>
       for {
-        _ <- organizationOrganizer.setInviteStatus(
+        organization <- organizationOrganizer.setInviteStatus(
           OrganizationID.spook(orgId),
           OrganizationInviteID.spook(inviteId),
           InviteStatus.InviteAccepted,
         )(user)
-        resp <- Ok()
+        resp <- Ok(organization)
       } yield resp
 
     case POST -> Root / `organizations-route` / FUUIDVar(orgId) / `invites-route` / FUUIDVar(inviteId) / "decline" as user =>
@@ -126,6 +126,12 @@ final private[rest] class OrganizationRoutes[F[_]](
         members <- organizationOrganizer
           .getOrganizationMemberList(OrganizationID.spook(orgId), PagingInfo(pageNumber, pageSize))(user)
         resp <- Ok(members)
+      } yield resp
+
+    case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / "me" as user =>
+      for {
+        member <- organizationOrganizer.getOrganizationMemberById(OrganizationID.spook(orgId), user.userId)(user)
+        resp   <- Ok(member)
       } yield resp
 
     case (req @ PUT -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / FUUIDVar(userId)) as user =>

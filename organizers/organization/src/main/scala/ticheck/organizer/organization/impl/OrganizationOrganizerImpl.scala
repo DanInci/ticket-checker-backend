@@ -75,7 +75,7 @@ final private[organization] case class OrganizationOrganizerImpl[F[_]](
 
   override def setInviteStatus(id: OrganizationID, inviteId: OrganizationInviteID, status: InviteStatus)(
     implicit ctx:                  UserAuthCtx,
-  ): F[Unit] =
+  ): F[OrganizationProfile] =
     for {
       organization <- organizationAlgebra.setInviteStatus(id, inviteId, status)(ctx.userId, ctx.email)
     } yield organization
@@ -86,6 +86,13 @@ final private[organization] case class OrganizationOrganizerImpl[F[_]](
     for {
       members <- organizationAlgebra.getMembersList(id, pagingInfo)
     } yield members
+
+  override def getOrganizationMemberById(id: OrganizationID, userId: UserID)(
+    implicit ctx:                            UserAuthCtx,
+  ): F[OrganizationMember] =
+    for {
+      member <- organizationAlgebra.getOrganizationMemberById(id, userId)
+    } yield member
 
   override def updateOrganizationMember(id: OrganizationID, userId: UserID, definition: OrganizationMemberDefinition)(
     implicit ctx:                           UserAuthCtx,

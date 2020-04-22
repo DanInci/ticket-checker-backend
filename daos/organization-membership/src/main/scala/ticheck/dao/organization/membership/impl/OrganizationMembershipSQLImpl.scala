@@ -2,7 +2,7 @@ package ticheck.dao.organization.membership.impl
 
 import ticheck.effect._
 import ticheck.{Email, Limit, Offset, OrganizationID, OrganizationMembershipID, UserID}
-import ticheck.dao.organization.membership.OrganizationMembershipSQL
+import ticheck.dao.organization.membership.{OrganizationMembershipSQL, SoldTicketsNo, ValidatedTicketsNo}
 import ticheck.dao.organization.membership.models.OrganizationMembershipRecord
 import ticheck.db._
 import ticheck.time.TimeAlgebra
@@ -56,6 +56,21 @@ final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (ove
     sql"""SELECT "id", "user_id", "organization_id", "invite_id", "role", "joined_at"
          | FROM "organization_membership"
          | WHERE "id"=$pk""".stripMargin.query[OrganizationMembershipRecord].option
+
+  override def getSoldTicketsCountFor(organizationId: OrganizationID, userId: UserID): ConnectionIO[SoldTicketsNo] =
+    sql"""SELECT COUNT(*)
+         | FROM "ticket"
+         | WHERE "organization_id"=$organizationId AND "sold_by_id"=$userId""".stripMargin.query[SoldTicketsNo].unique
+
+  override def getValidatedTicketsCountFor(
+    organizationId: OrganizationID,
+    userId:         UserID,
+  ): ConnectionIO[ValidatedTicketsNo] =
+    sql"""SELECT COUNT(*)
+         | FROM "ticket"
+         | WHERE "organization_id"=$organizationId AND "validated_by_id"=$userId""".stripMargin
+      .query[ValidatedTicketsNo]
+      .unique
 
   override def retrieve(pk: OrganizationMembershipID)(
     implicit show:          Show[OrganizationMembershipID],
