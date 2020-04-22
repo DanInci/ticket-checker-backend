@@ -139,6 +139,14 @@ final private[ticket] class TicketAlgebraImpl[F[_]] private (
     } yield ()
   }
 
+  override def getTicketsCount(
+    organizationId: OrganizationID,
+    byCategory:     Option[TicketCategory],
+    searchValue:    Option[String],
+  ): F[Count] = transact {
+    ticketSQL.countBy(organizationId, byCategory, searchValue)
+  }
+
   override def getCountStats(
     organizationId: OrganizationID,
     byCategory:     TicketCategory,

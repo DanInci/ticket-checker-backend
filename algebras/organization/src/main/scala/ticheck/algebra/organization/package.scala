@@ -8,6 +8,6 @@ package ticheck.algebra
   */
 package object organization {
 
-  type OrganizationModuleAlgebra[F[_]] = OrganizationAlgebra[F]
+  type OrganizationModuleAlgebra[F[_]] = OrganizationAlgebra[F] with OrganizationStatisticsAlgebra[F]
 
 }

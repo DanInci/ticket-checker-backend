@@ -1,8 +1,8 @@
 package ticheck.algebra.ticket.models
 
-import ticheck.TicketID
+import ticheck.{OrganizationID, TicketID}
 import ticheck.dao.ticket.models.TicketRecord
-import ticheck.dao.ticket.{SoldAt, ValidatedAt}
+import ticheck.dao.ticket.{SoldAt, SoldTo, ValidatedAt}
 
 /**
   *
@@ -11,9 +11,11 @@ import ticheck.dao.ticket.{SoldAt, ValidatedAt}
   *
   */
 final case class TicketList(
-  id:          TicketID,
-  soldAt:      SoldAt,
-  validatedAt: Option[ValidatedAt],
+  id:             TicketID,
+  organizationId: OrganizationID,
+  soldTo:         Option[SoldTo],
+  soldAt:         SoldAt,
+  validatedAt:    Option[ValidatedAt],
 )
 
 object TicketList {
@@ -24,6 +26,8 @@ object TicketList {
   def fromDAO(t: TicketRecord): TicketList =
     TicketList(
       t.id,
+      t.organizationId,
+      t.soldTo,
       t.soldAt,
       t.validatedAt,
     )

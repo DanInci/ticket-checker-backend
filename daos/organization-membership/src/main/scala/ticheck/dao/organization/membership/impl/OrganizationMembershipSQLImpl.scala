@@ -1,8 +1,14 @@
 package ticheck.dao.organization.membership.impl
 
+import doobie.util.fragment.Fragment
 import ticheck.effect._
-import ticheck.{Email, Limit, Offset, OrganizationID, OrganizationMembershipID, UserID}
-import ticheck.dao.organization.membership.{OrganizationMembershipSQL, SoldTicketsNo, ValidatedTicketsNo}
+import ticheck.{Count, Email, Limit, Offset, OrganizationID, OrganizationMembershipID, UserID}
+import ticheck.dao.organization.membership.{
+  OrganizationMembershipSQL,
+  OrganizationRole,
+  SoldTicketsNo,
+  ValidatedTicketsNo,
+}
 import ticheck.dao.organization.membership.models.OrganizationMembershipRecord
 import ticheck.db._
 import ticheck.time.TimeAlgebra
@@ -15,6 +21,28 @@ import ticheck.time.TimeAlgebra
   */
 final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (override val timeAlgebra: TimeAlgebra)
     extends OrganizationMembershipSQL[ConnectionIO] with OrganizationMembershipComposites {
+
+  override def countBy(
+    organizationId: OrganizationID,
+    byRole:         Option[OrganizationRole],
+    searchValue:    Option[String],
+  ): ConnectionIO[Count] = {
+    val organizationIdWC = Some(s""""om"."organization_id"='$organizationId'""")
+    val byRoleWC = byRole.map { role =>
+      s""""om"."role"='$role'  """
+    }
+    val searchValWC = searchValue.map(
+      s => s""""u"."name" LIKE '$s%'""",
+    )
+    val WCs         = List(organizationIdWC, byRoleWC, searchValWC).flatten
+    val whereClause = WCs.mkString("WHERE ", " AND ", "")
+
+    (sql"""SELECT COUNT(*)
+          | FROM "organization_membership" "om"
+          | INNER JOIN "user" "u" ON "om"."user_id" = "u"."id" """.stripMargin ++ Fragment.const(whereClause))
+      .query[Count]
+      .unique
+  }
 
   override def getAllForOrganization(
     organizationId: OrganizationID,

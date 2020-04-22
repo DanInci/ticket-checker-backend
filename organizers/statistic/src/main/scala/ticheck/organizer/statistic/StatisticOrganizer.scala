@@ -1,10 +1,12 @@
 package ticheck.organizer.statistic
 
+import ticheck.algebra.organization.OrganizationStatisticsAlgebra
 import ticheck.organizer.statistic.impl.StatisticOrganizerImpl
-import ticheck.OrganizationID
+import ticheck.{Count, OrganizationID}
 import ticheck.algebra.ticket._
 import ticheck.algebra.ticket.models.TicketStatistic
 import ticheck.auth.models.UserAuthCtx
+import ticheck.dao.organization.membership.OrganizationRole
 import ticheck.dao.ticket.TicketCategory
 import ticheck.effect.Sync
 
@@ -15,6 +17,18 @@ import ticheck.effect.Sync
   *
   */
 trait StatisticOrganizer[F[_]] {
+
+  def getOrganizationMembersCount(
+    id:           OrganizationID,
+    byRole:       Option[OrganizationRole] = None,
+    searchFilter: Option[String] = None,
+  )(implicit ctx: UserAuthCtx): F[Count]
+
+  def getTicketsCount(
+    id:           OrganizationID,
+    byCategory:   Option[TicketCategory] = None,
+    searchFilter: Option[String] = None,
+  )(implicit ctx: UserAuthCtx): F[Count]
 
   def getStatisticsForTickets(
     id:           OrganizationID,
@@ -28,7 +42,10 @@ trait StatisticOrganizer[F[_]] {
 
 object StatisticOrganizer {
 
-  def apply[F[_]: Sync](ticketStatisticsAlgebra: TicketStatisticsAlgebra[F]): F[StatisticOrganizer[F]] =
-    Sync[F].pure(new StatisticOrganizerImpl[F](ticketStatisticsAlgebra))
+  def apply[F[_]: Sync](
+    organizationStatisticsAlgebra: OrganizationStatisticsAlgebra[F],
+    ticketStatisticsAlgebra:       TicketStatisticsAlgebra[F],
+  ): F[StatisticOrganizer[F]] =
+    Sync[F].pure(new StatisticOrganizerImpl[F](organizationStatisticsAlgebra, ticketStatisticsAlgebra))
 
 }

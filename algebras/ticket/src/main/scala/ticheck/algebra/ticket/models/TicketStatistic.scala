@@ -1,6 +1,7 @@
 package ticheck.algebra.ticket.models
 
-import ticheck.dao.ticket.{Count, EndDate, StartDate}
+import ticheck.Count
+import ticheck.dao.ticket.{EndDate, StartDate}
 
 /**
   *

@@ -28,7 +28,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
   organizationInviteSQL:     OrganizationInviteSQL[ConnectionIO],
   organizationMembershipSQL: OrganizationMembershipSQL[ConnectionIO],
 )(implicit F:                Async[F], transactor: Transactor[F])
-    extends OrganizationAlgebra[F] with DBOperationsAlgebra[F] {
+    extends OrganizationAlgebra[F] with OrganizationStatisticsAlgebra[F] with DBOperationsAlgebra[F] {
 
   override def getAll(filter: Option[List[OrganizationID]], pagingInfo: PagingInfo)(
     implicit userId:          UserID,
@@ -218,6 +218,14 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       memberDAO <- checkDeleteMember(id: OrganizationID, userId: UserID)
       _         <- organizationMembershipSQL.delete(memberDAO.id)
     } yield ()
+  }
+
+  override def getOrganizationMembersCount(
+    organizationId: OrganizationID,
+    byRole:         Option[OrganizationRole],
+    searchValue:    Option[String],
+  ): F[Count] = transact {
+    organizationMembershipSQL.countBy(organizationId, byRole, searchValue)
   }
 
   private def generateInviteCode[H[_]: Sync: SecureRandom]: H[InviteCode] = {

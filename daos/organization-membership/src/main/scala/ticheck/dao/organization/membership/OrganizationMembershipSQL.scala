@@ -1,6 +1,6 @@
 package ticheck.dao.organization.membership
 
-import ticheck.{Email, Limit, Offset, OrganizationID, OrganizationMembershipID, UserID}
+import ticheck.{Count, Email, Limit, Offset, OrganizationID, OrganizationMembershipID, UserID}
 import ticheck.dao.organization.membership.models.OrganizationMembershipRecord
 import ticheck.db.DAOAlgebra
 
@@ -11,6 +11,12 @@ import ticheck.db.DAOAlgebra
   *
   */
 trait OrganizationMembershipSQL[H[_]] extends DAOAlgebra[H, OrganizationMembershipRecord, OrganizationMembershipID] {
+
+  def countBy(
+    organizationId: OrganizationID,
+    byRole:         Option[OrganizationRole],
+    searchValue:    Option[String],
+  ): H[Count]
 
   def getAllForOrganization(
     organizationId: OrganizationID,

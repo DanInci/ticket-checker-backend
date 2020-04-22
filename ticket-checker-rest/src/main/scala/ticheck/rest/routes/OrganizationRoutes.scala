@@ -128,10 +128,12 @@ final private[rest] class OrganizationRoutes[F[_]](
         resp <- Ok(members)
       } yield resp
 
-    case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / "me" as user =>
+    case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / FUUIDVar(userId) as user =>
       for {
-        member <- organizationOrganizer.getOrganizationMemberById(OrganizationID.spook(orgId), user.userId)(user)
-        resp   <- Ok(member)
+        member <- organizationOrganizer.getOrganizationMemberById(OrganizationID.spook(orgId), UserID.spook(userId))(
+          user,
+        )
+        resp <- Ok(member)
       } yield resp
 
     case (req @ PUT -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route` / FUUIDVar(userId)) as user =>

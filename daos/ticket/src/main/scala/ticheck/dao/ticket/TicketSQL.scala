@@ -1,6 +1,6 @@
 package ticheck.dao.ticket
 
-import ticheck.{Limit, Offset, OrganizationID, UserID}
+import ticheck.{Count, Limit, Offset, OrganizationID, UserID}
 import ticheck.db.DAOAlgebra
 import ticheck.dao.ticket.models.TicketRecord
 
@@ -27,6 +27,12 @@ trait TicketSQL[H[_]] extends DAOAlgebra[H, TicketRecord, TicketPK] {
     byCategory: TicketCategory,
     startDate:  StartDate,
     endDate:    EndDate,
+  ): H[Count]
+
+  def countBy(
+    organizationId: OrganizationID,
+    byCategory:     Option[TicketCategory],
+    searchVal:      Option[String],
   ): H[Count]
 
 }

@@ -1,6 +1,6 @@
 package ticheck.algebra.ticket
 
-import ticheck.OrganizationID
+import ticheck.{Count, OrganizationID}
 import ticheck.algebra.ticket.models.TicketStatistic
 import ticheck.dao.ticket.TicketCategory
 
@@ -11,6 +11,12 @@ import ticheck.dao.ticket.TicketCategory
   *
   */
 trait TicketStatisticsAlgebra[F[_]] {
+
+  def getTicketsCount(
+    organizationId: OrganizationID,
+    byCategory:     Option[TicketCategory],
+    searchValue:    Option[String],
+  ): F[Count]
 
   def getCountStats(
     organizationId: OrganizationID,

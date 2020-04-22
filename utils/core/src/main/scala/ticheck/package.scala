@@ -51,4 +51,7 @@ package object ticheck
   object Limit extends PhantomType[Int]
   type Limit = Limit.Type
 
+  object Count extends PhantomType[Int]
+  type Count = Count.Type
+
 }

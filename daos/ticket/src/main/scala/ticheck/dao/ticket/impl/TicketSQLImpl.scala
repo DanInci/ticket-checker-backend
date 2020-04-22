@@ -2,8 +2,8 @@ package ticheck.dao.ticket.impl
 
 import doobie.util.fragment.Fragment
 import ticheck.dao.ticket.TicketCategory.{SoldTicket, ValidatedTicket}
-import ticheck.{Limit, Offset, OrganizationID, UserID}
-import ticheck.dao.ticket.{Count, EndDate, StartDate, TicketCategory, TicketPK, TicketSQL}
+import ticheck.{Count, Limit, Offset, OrganizationID, UserID}
+import ticheck.dao.ticket.{EndDate, StartDate, TicketCategory, TicketPK, TicketSQL}
 import ticheck.dao.ticket.models.TicketRecord
 import ticheck.db._
 import ticheck.effect._
@@ -17,6 +17,28 @@ import ticheck.time.TimeAlgebra
   */
 final private[ticket] class TicketSQLImpl private (override val timeAlgebra: TimeAlgebra)
     extends TicketSQL[ConnectionIO] with TicketComposites {
+
+  override def countBy(
+    organizationId: OrganizationID,
+    byCategory:     Option[TicketCategory],
+    searchVal:      Option[String],
+  ): ConnectionIO[Count] = {
+    val organizationIdWC = Some(s""""organization_id"='$organizationId'""")
+    val byCategoryWC = byCategory.map {
+      case SoldTicket =>
+        s""""sold_at" IS NOT NULL"""
+      case ValidatedTicket =>
+        s""""validated_at" IS NOT NULL"""
+      case _ => ""
+    }
+    val searchValWC = searchVal.map(
+      s => s"""("sold_to" LIKE '$s%' OR "sold_by_name" LIKE '$s%' OR "validated_by_name" LIKE '$s%')""",
+    )
+    val WCs         = List(organizationIdWC, byCategoryWC, searchValWC).flatten
+    val whereClause = WCs.mkString("WHERE ", " AND ", "")
+
+    (sql"""SELECT COUNT(*) FROM "ticket" """.stripMargin ++ Fragment.const(whereClause)).query[Count].unique
+  }
 
   override def countTicketsBetweenDates(
     byCategory: TicketCategory,
