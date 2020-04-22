@@ -48,11 +48,25 @@ final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (ove
     organizationId: OrganizationID,
     offset:         Offset,
     limit:          Limit,
-  ): ConnectionIO[List[OrganizationMembershipRecord]] =
-    sql"""SELECT "id", "user_id", "organization_id", "invite_id", "role", "joined_at"
-         | FROM "organization_membership"
-         | WHERE "organization_id"=$organizationId
-         | OFFSET $offset LIMIT $limit""".stripMargin.query[OrganizationMembershipRecord].to[List]
+    byRole:         Option[OrganizationRole],
+    searchValue:    Option[String],
+  ): ConnectionIO[List[OrganizationMembershipRecord]] = {
+    val organizationIdWC = Some(s""""om"."organization_id"='$organizationId'""")
+    val byRoleWC = byRole.map { role =>
+      s""""om"."role"='$role'  """
+    }
+    val searchValWC = searchValue.map(
+      s => s""""u"."name" LIKE '$s%'""",
+    )
+    val WCs         = List(organizationIdWC, byRoleWC, searchValWC).flatten
+    val whereClause = WCs.mkString("WHERE ", " AND ", "")
+
+    (sql"""SELECT "om"."id", "om"."user_id", "om"."organization_id", "om"."invite_id", "om"."role", "om"."joined_at"
+          | FROM "organization_membership" "om"
+          | INNER JOIN "user" "u" ON "om"."user_id" = "u"."id" """.stripMargin
+      ++ Fragment.const(whereClause) ++
+      sql""" OFFSET $offset LIMIT $limit""".stripMargin).query[OrganizationMembershipRecord].to[List]
+  }
 
   override def findForOrganizationByUserID(
     organizationId: OrganizationID,

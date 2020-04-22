@@ -6,6 +6,7 @@ import org.http4s.dsl.Http4sDsl
 import ticheck.{OrganizationID, OrganizationInviteID, PagingInfo, UserID}
 import ticheck.algebra.organization.models._
 import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
+import ticheck.dao.organization.membership.OrganizationRole
 import ticheck.effect._
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.organizer.organization.OrganizationOrganizer
@@ -33,8 +34,17 @@ final private[rest] class OrganizationRoutes[F[_]](
         .leftMap(t => ParseFailure("Query param decoding failed", t.getMessage))
         .toValidatedNel
 
-  object InviteCodeQueryParamMatcher   extends QueryParamDecoderMatcher[InviteCode]("code")
-  object InviteStatusQueryParamMatcher extends OptionalQueryParamDecoderMatcher[InviteStatus]("status")
+  implicit val organizationRoleQueryParamDecoder: QueryParamDecoder[OrganizationRole] =
+    (value: QueryParameterValue) =>
+      OrganizationRole
+        .fromString(value.value)
+        .leftMap(t => ParseFailure("Query param decoding failed", t.getMessage))
+        .toValidatedNel
+
+  object InviteCodeQueryParamMatcher       extends QueryParamDecoderMatcher[InviteCode]("code")
+  object InviteStatusQueryParamMatcher     extends OptionalQueryParamDecoderMatcher[InviteStatus]("status")
+  object OrganizationRoleQueryParamMatcher extends OptionalQueryParamDecoderMatcher[OrganizationRole]("role")
+  object SearchQueryParamMatcher           extends OptionalQueryParamDecoderMatcher[String]("search")
 
   private val organizationRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case (req @ POST -> Root / `organizations-route`) as user =>
@@ -121,10 +131,16 @@ final private[rest] class OrganizationRoutes[F[_]](
 
   private val organizationMembershipRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case GET -> Root / `organizations-route` / FUUIDVar(orgId) / `users-route`
-          :? PageNumberMatcher(pageNumber) +& PageSizeMatcher(pageSize) as user =>
+          :? PageNumberMatcher(pageNumber) +& PageSizeMatcher(pageSize)
+            +& OrganizationRoleQueryParamMatcher(byRole) +& SearchQueryParamMatcher(searchFilter) as user =>
       for {
         members <- organizationOrganizer
-          .getOrganizationMemberList(OrganizationID.spook(orgId), PagingInfo(pageNumber, pageSize))(user)
+          .getOrganizationMemberList(
+            OrganizationID.spook(orgId),
+            PagingInfo(pageNumber, pageSize),
+            byRole,
+            searchFilter,
+          )(user)
         resp <- Ok(members)
       } yield resp
 

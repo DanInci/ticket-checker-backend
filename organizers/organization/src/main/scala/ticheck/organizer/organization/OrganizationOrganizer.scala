@@ -5,6 +5,7 @@ import ticheck.algebra.organization.OrganizationAlgebra
 import ticheck.algebra.organization.models._
 import ticheck.auth.models.UserAuthCtx
 import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
+import ticheck.dao.organization.membership.OrganizationRole
 import ticheck.effect.Sync
 
 /**
@@ -41,8 +42,13 @@ trait OrganizationOrganizer[F[_]] {
     implicit ctx:         UserAuthCtx,
   ): F[OrganizationProfile]
 
-  def getOrganizationMemberList(id: OrganizationID, pagingInfo: PagingInfo)(
-    implicit ctx:                   UserAuthCtx,
+  def getOrganizationMemberList(
+    id:           OrganizationID,
+    pagingInfo:   PagingInfo,
+    byRole:       Option[OrganizationRole],
+    searchFilter: Option[String],
+  )(
+    implicit ctx: UserAuthCtx,
   ): F[List[OrganizationMemberList]]
 
   def getOrganizationMemberById(id: OrganizationID, userId: UserID)(implicit ctx: UserAuthCtx): F[OrganizationMember]

@@ -178,9 +178,20 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       } yield OrganizationProfile.fromDAO(orgDAO, membership)
     }
 
-  override def getMembersList(id: OrganizationID, pagingInfo: PagingInfo): F[List[OrganizationMemberList]] = transact {
+  override def getMembersList(
+    id:           OrganizationID,
+    pagingInfo:   PagingInfo,
+    byRole:       Option[OrganizationRole],
+    searchFilter: Option[String],
+  ): F[List[OrganizationMemberList]] = transact {
     for {
-      membersDaos    <- organizationMembershipSQL.getAllForOrganization(id, pagingInfo.getOffset, pagingInfo.getLimit)
+      membersDaos <- organizationMembershipSQL.getAllForOrganization(
+        id,
+        pagingInfo.getOffset,
+        pagingInfo.getLimit,
+        byRole:       Option[OrganizationRole],
+        searchFilter: Option[String],
+      )
       memberUserDaos <- membersDaos.traverse(m => userSQL.retrieve(m.userId).map(u => (m, u)))
       members = memberUserDaos.map(mu => OrganizationMemberList.fromDAO(mu._1, mu._2))
     } yield members

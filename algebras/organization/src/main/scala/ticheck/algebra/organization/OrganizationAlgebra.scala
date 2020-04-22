@@ -3,6 +3,7 @@ package ticheck.algebra.organization
 import ticheck.{Email, OrganizationID, OrganizationInviteID, PagingInfo, UserID}
 import ticheck.algebra.organization.models._
 import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
+import ticheck.dao.organization.membership.OrganizationRole
 
 /**
   *
@@ -51,7 +52,12 @@ trait OrganizationAlgebra[F[_]] {
     email:                Email,
   ): F[OrganizationProfile]
 
-  def getMembersList(id: OrganizationID, pagingInfo: PagingInfo): F[List[OrganizationMemberList]]
+  def getMembersList(
+    id:           OrganizationID,
+    pagingInfo:   PagingInfo,
+    byRole:       Option[OrganizationRole],
+    searchFilter: Option[String],
+  ): F[List[OrganizationMemberList]]
 
   def getOrganizationMemberById(id: OrganizationID, userId: UserID): F[OrganizationMember]
 

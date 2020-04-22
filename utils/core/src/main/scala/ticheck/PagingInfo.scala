@@ -15,7 +15,7 @@ object PagingInfo {
   lazy val defaultPagingInfo: PagingInfo = new PagingInfo(PageNumber(0), defaultPageSize)
 
   def apply(pageNumber: Option[PageNumber], pageSize: Option[PageSize]): PagingInfo = {
-    val correctedPageNumber = pageNumber.map(p => if (p < 1) PageNumber(1) else p).getOrElse(PageNumber(1))
+    val correctedPageNumber = pageNumber.map(p => if (p < 0) PageNumber(0) else p).getOrElse(PageNumber(0))
     val correctedPageSize = pageSize
       .map(ps => if (ps < 0) defaultPageSize else if (ps > 50) maxPageSize else PageSize(ps))
       .getOrElse(defaultPageSize)
@@ -26,8 +26,8 @@ object PagingInfo {
 }
 final case class PagingInfo private (pageNumber: PageNumber, pageSize: PageSize) {
 
-  def getOffset: Offset = Offset.spook((pageNumber - 1) * pageSize)
+  def getOffset: Offset = Offset.spook(pageNumber * pageSize)
 
-  def getLimit: Limit = Limit.spook((pageNumber - 1) * pageSize + pageSize)
+  def getLimit: Limit = Limit.spook(pageNumber * pageSize + pageSize)
 
 }

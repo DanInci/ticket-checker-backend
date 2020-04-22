@@ -5,6 +5,7 @@ import ticheck.algebra.organization.OrganizationAlgebra
 import ticheck.algebra.organization.models._
 import ticheck.auth.models.UserAuthCtx
 import ticheck.dao.organization.invite.{InviteCode, InviteStatus}
+import ticheck.dao.organization.membership.OrganizationRole
 import ticheck.organizer.organization.OrganizationOrganizer
 import ticheck.effect._
 
@@ -80,11 +81,17 @@ final private[organization] case class OrganizationOrganizerImpl[F[_]](
       organization <- organizationAlgebra.setInviteStatus(id, inviteId, status)(ctx.userId, ctx.email)
     } yield organization
 
-  override def getOrganizationMemberList(id: OrganizationID, pagingInfo: PagingInfo)(
-    implicit ctx:                            UserAuthCtx,
+  override def getOrganizationMemberList(
+    id:           OrganizationID,
+    pagingInfo:   PagingInfo,
+    byRole:       Option[OrganizationRole],
+    searchFilter: Option[String],
+  )(
+    implicit ctx: UserAuthCtx,
   ): F[List[OrganizationMemberList]] =
     for {
-      members <- organizationAlgebra.getMembersList(id, pagingInfo)
+      members <- organizationAlgebra
+        .getMembersList(id, pagingInfo, byRole: Option[OrganizationRole], searchFilter: Option[String])
     } yield members
 
   override def getOrganizationMemberById(id: OrganizationID, userId: UserID)(

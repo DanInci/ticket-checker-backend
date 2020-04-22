@@ -22,6 +22,8 @@ trait OrganizationMembershipSQL[H[_]] extends DAOAlgebra[H, OrganizationMembersh
     organizationId: OrganizationID,
     offset:         Offset,
     limit:          Limit,
+    byRole:         Option[OrganizationRole],
+    searchValue:    Option[String],
   ): H[List[OrganizationMembershipRecord]]
 
   def findForOrganizationByUserID(
