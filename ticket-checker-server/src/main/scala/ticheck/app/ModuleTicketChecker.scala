@@ -4,6 +4,7 @@ import org.http4s.HttpRoutes
 import ticheck.algebra.organization.ModuleOrganizationAlgebra
 import ticheck.algebra.ticket.ModuleTicketAlgebra
 import ticheck.algebra.user.ModuleUserAlgebra
+import ticheck.app.static.StaticFiles
 import ticheck.auth.{JWTAuthConfig, ModuleAuthAlgebra}
 import ticheck.dao.organization.ModuleOrganizationDAO
 import ticheck.dao.organization.invite.ModuleOrganizationInviteDAO
@@ -29,11 +30,15 @@ trait ModuleTicketChecker[F[_]]
 
   override protected def transactor: Transactor[F]
 
-  override protected def S: Sync[F] = C
-
   override protected def F: Async[F] = C
 
+  override protected def S: Sync[F] = C
+
   implicit protected def C: Concurrent[F]
+
+  implicit protected def contextShift: ContextShift[F]
+
+  implicit protected def blockingShifter: BlockingShifter[F]
 
   protected def allConfigs: AllConfigs
 
@@ -51,11 +56,12 @@ trait ModuleTicketChecker[F[_]]
 
   private lazy val _serverRoutes: F[HttpRoutes[F]] =
     for {
-      middleware <- authCtxMiddleware
-      routes     <- routes
-      authed     <- authedRoutes
-      toCombine = middleware(authed)
-    } yield routes <+> toCombine
+      middleware   <- authCtxMiddleware
+      routes       <- routes
+      staticRoutes <- StaticFiles.routes(C, contextShift, blockingShifter)
+      authed       <- authedRoutes
+      authedRoutes = middleware(authed)
+    } yield routes <+> staticRoutes <+> authedRoutes
 
 }
 
@@ -70,6 +76,10 @@ object ModuleTicketChecker {
     bioShifter: BlockingShifter[F],
   ): F[ModuleTicketChecker[F]] = c.delay {
     new ModuleTicketChecker[F] {
+      override protected def contextShift: ContextShift[F] = cs
+
+      override protected def blockingShifter: BlockingShifter[F] = bioShifter
+
       override protected def C: Concurrent[F] = c
 
       override protected def transactor: Transactor[F] = t
