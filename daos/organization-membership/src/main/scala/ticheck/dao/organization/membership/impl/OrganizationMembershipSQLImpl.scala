@@ -29,7 +29,7 @@ final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (ove
   ): ConnectionIO[Count] = {
     val organizationIdWC = Some(s""""om"."organization_id"='$organizationId'""")
     val byRoleWC = byRole.map { role =>
-      s""""om"."role"='$role'  """
+      s""""om"."role"='${role.asString}'  """
     }
     val searchValWC = searchValue.map(
       s => s"""UPPER("u"."name") LIKE UPPER('$s%')""",
@@ -53,7 +53,7 @@ final private[membership] class OrganizationMembershipSQLImpl[F[_]] private (ove
   ): ConnectionIO[List[OrganizationMembershipRecord]] = {
     val organizationIdWC = Some(s""""om"."organization_id"='$organizationId'""")
     val byRoleWC = byRole.map { role =>
-      s""""om"."role"='$role'  """
+      s""""om"."role"='${role.asString}'  """
     }
     val searchValWC = searchValue.map(
       s => s"""UPPER("u"."name") LIKE UPPER('$s%')""",

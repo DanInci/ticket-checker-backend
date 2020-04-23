@@ -1,7 +1,7 @@
 package ticheck.algebra.organization.models
 
 import ticheck.dao.organization.membership.models.OrganizationMembershipRecord
-import ticheck.{Name, UserID}
+import ticheck.{Name, OrganizationID, UserID}
 import ticheck.dao.organization.membership.{JoinedAt, OrganizationRole}
 import ticheck.dao.user.models.UserRecord
 
@@ -12,10 +12,11 @@ import ticheck.dao.user.models.UserRecord
   *
   */
 final case class OrganizationMemberList(
-  userId:   UserID,
-  name:     Name,
-  role:     OrganizationRole,
-  joinedAt: JoinedAt,
+  organizationId: OrganizationID,
+  userId:         UserID,
+  name:           Name,
+  role:           OrganizationRole,
+  joinedAt:       JoinedAt,
 )
 
 object OrganizationMemberList {
@@ -25,6 +26,7 @@ object OrganizationMemberList {
 
   def fromDAO(om: OrganizationMembershipRecord, u: UserRecord): OrganizationMemberList =
     OrganizationMemberList(
+      om.organizationId,
       u.id,
       u.name,
       om.role,

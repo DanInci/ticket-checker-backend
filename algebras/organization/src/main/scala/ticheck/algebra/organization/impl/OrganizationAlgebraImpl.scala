@@ -221,7 +221,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       userDAO            <- userSQL.retrieve(memberDAO.userId)
       soldTicketsNo      <- organizationMembershipSQL.getSoldTicketsCountFor(id, userId)
       validatedTicketsNo <- organizationMembershipSQL.getValidatedTicketsCountFor(id, userId)
-    } yield OrganizationMember.fromDAO(orgDAO, userDAO, memberDAO, soldTicketsNo, validatedTicketsNo)
+    } yield OrganizationMember.fromDAO(orgDAO, userDAO, updatedMemberDAO, soldTicketsNo, validatedTicketsNo)
   }
 
   override def removeMemberByUserID(id: OrganizationID, userId: UserID): F[Unit] = transact {
