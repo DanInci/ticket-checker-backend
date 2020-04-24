@@ -17,7 +17,7 @@ import ticheck.email.model.Attachment
   *
   */
 private[impl] class JavaMailClient[F[_]](
-  private val config: EmailAlgebraConfig,
+  private val config: EmailConfig,
 )(
   implicit private val F: Sync[F],
 ) {

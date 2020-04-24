@@ -13,6 +13,7 @@ import ticheck.dao.organization.models.OrganizationRecord
 import ticheck.dao.user.UserSQL
 import ticheck.db._
 import ticheck.effect._
+import ticheck.email.EmailAlgebra
 import ticheck.time.TimeAlgebra
 
 /**
@@ -23,6 +24,7 @@ import ticheck.time.TimeAlgebra
   */
 final private[organization] class OrganizationAlgebraImpl[F[_]] private (
   timeAlgebra:               TimeAlgebra,
+  emailAlgebra:              EmailAlgebra[F],
   userSQL:                   UserSQL[ConnectionIO],
   organizationSQL:           OrganizationSQL[ConnectionIO],
   organizationInviteSQL:     OrganizationInviteSQL[ConnectionIO],
@@ -421,6 +423,7 @@ private[organization] object OrganizationAlgebraImpl {
 
   def async[F[_]: Async: Transactor](
     timeAlgebra:               TimeAlgebra,
+    emailAlgebra:              EmailAlgebra[F],
     userSQL:                   UserSQL[ConnectionIO],
     organizationSQL:           OrganizationSQL[ConnectionIO],
     organizationInviteSQL:     OrganizationInviteSQL[ConnectionIO],
@@ -429,6 +432,7 @@ private[organization] object OrganizationAlgebraImpl {
     Async[F].pure(
       new OrganizationAlgebraImpl[F](
         timeAlgebra,
+        emailAlgebra,
         userSQL,
         organizationSQL,
         organizationInviteSQL,

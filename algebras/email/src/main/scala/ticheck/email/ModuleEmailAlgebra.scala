@@ -14,11 +14,11 @@ trait ModuleEmailAlgebra[F[_]] {
 
   implicit protected def blockingShifter: BlockingShifter[F]
 
-  protected def emailAlgebraConfig: EmailAlgebraConfig
+  protected def emailConfig: EmailConfig
 
   def emailAlgebra: F[EmailAlgebra[F]] = _emailAlgebra
 
   private lazy val _emailAlgebra: F[EmailAlgebra[F]] =
-    impl.EmailAlgebraImpl.async[F](emailAlgebraConfig)
+    impl.EmailAlgebraImpl.async[F](emailConfig)
 
 }

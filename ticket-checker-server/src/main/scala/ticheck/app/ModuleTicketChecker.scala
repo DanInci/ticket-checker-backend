@@ -13,6 +13,7 @@ import ticheck.dao.ticket.ModuleTicketDAO
 import ticheck.dao.user.ModuleUserDAO
 import ticheck.effect._
 import ticheck.db._
+import ticheck.email.{EmailConfig, ModuleEmailAlgebra}
 import ticheck.rest.{ModuleTicketCheckerRest, UserAuthedHttp4s, UserCtxMiddleware}
 import ticheck.time.{ModuleTimeAlgebra, TimeConfig}
 
@@ -26,7 +27,7 @@ trait ModuleTicketChecker[F[_]]
     extends ModuleTicketCheckerRest[F] with ModuleOrganizationAlgebra[F] with ModuleOrganizationDAO[F]
     with ModuleOrganizationMembershipDAO[F] with ModuleOrganizationInviteDAO[F] with ModuleTicketAlgebra[F]
     with ModuleTicketDAO[F] with ModuleAuthAlgebra[F] with ModuleUserAlgebra[F] with ModuleUserDAO[F]
-    with ModuleTimeAlgebra[F] {
+    with ModuleTimeAlgebra[F] with ModuleEmailAlgebra[F] {
 
   override protected def transactor: Transactor[F]
 
@@ -45,6 +46,8 @@ trait ModuleTicketChecker[F[_]]
   override protected def timeConfig: TimeConfig = allConfigs.timeConfig
 
   override protected def authConfig: JWTAuthConfig = allConfigs.jwtAuthConfig
+
+  override protected def emailConfig: EmailConfig = allConfigs.emailConfig
 
   def serverRoutes: F[HttpRoutes[F]] = _serverRoutes
 

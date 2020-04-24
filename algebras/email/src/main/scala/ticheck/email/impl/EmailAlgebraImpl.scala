@@ -68,7 +68,7 @@ final private[email] class EmailAlgebraImpl[F[_]](
 
 private[email] object EmailAlgebraImpl {
 
-  def async[F[_]: Async: BlockingShifter](config: EmailAlgebraConfig): F[EmailAlgebra[F]] = {
+  def async[F[_]: Async: BlockingShifter](config: EmailConfig): F[EmailAlgebra[F]] = {
     for {
       jmc <- new JavaMailClient[F](config).pure[F]
     } yield new EmailAlgebraImpl[F](jmc)

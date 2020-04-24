@@ -8,6 +8,7 @@ import ticheck.dao.user._
 import ticheck.dao.user.models.UserRecord
 import ticheck.db._
 import ticheck.effect._
+import ticheck.email.EmailAlgebra
 import ticheck.time.TimeAlgebra
 
 /**
@@ -19,6 +20,7 @@ import ticheck.time.TimeAlgebra
 final private[auth] class AuthAlgebraImpl[F[_]] private (
   authConfig:                JWTAuthConfig,
   timeAlgebra:               TimeAlgebra,
+  emailAlgebra:              EmailAlgebra[F],
   userSQL:                   UserSQL[ConnectionIO],
   organizationMembershipSQL: OrganizationMembershipSQL[ConnectionIO],
 )(
@@ -98,9 +100,10 @@ private[auth] object AuthAlgebraImpl {
   def async[F[_]: Async: Transactor](
     authConfig:                JWTAuthConfig,
     timeAlgebra:               TimeAlgebra,
+    emailAlgebra:              EmailAlgebra[F],
     userSQL:                   UserSQL[ConnectionIO],
     organizationMembershipSQL: OrganizationMembershipSQL[ConnectionIO],
   ): F[AuthAlgebra[F]] =
-    Async[F].pure(new AuthAlgebraImpl[F](authConfig, timeAlgebra, userSQL, organizationMembershipSQL))
+    Async[F].pure(new AuthAlgebraImpl[F](authConfig, timeAlgebra, emailAlgebra, userSQL, organizationMembershipSQL))
 
 }

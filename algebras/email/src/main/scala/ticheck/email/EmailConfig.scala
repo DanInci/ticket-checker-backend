@@ -10,7 +10,7 @@ import ticheck.config._
   * @since 4/24/2020
   *
   */
-final case class EmailAlgebraConfig(
+final case class EmailConfig(
   emailFrom:    Email,
   smtpUsername: SMTPUsername,
   smtpPassword: SMTPPlainTextPassword,
@@ -18,13 +18,13 @@ final case class EmailAlgebraConfig(
   smtpPort:     SMTPPort,
 )
 
-object EmailAlgebraConfig extends ConfigLoader[EmailAlgebraConfig] {
+object EmailConfig extends ConfigLoader[EmailConfig] {
 
   implicit val emailConfigReader: ConfigReader[Email] =
     ConfigReader[String].emap[Email] { s: String =>
       Email(s).leftMap(e => pureconfig.error.ExceptionThrown(e): pureconfig.error.FailureReason)
     }
-  implicit override val configReader: ConfigReader[EmailAlgebraConfig] = semiauto.deriveReader[EmailAlgebraConfig]
-  override def default[F[_]: Sync]: F[EmailAlgebraConfig] = this.load("ticheck.email")
+  implicit override val configReader: ConfigReader[EmailConfig] = semiauto.deriveReader[EmailConfig]
+  override def default[F[_]: Sync]: F[EmailConfig] = this.load("ticheck.email")
 
 }
