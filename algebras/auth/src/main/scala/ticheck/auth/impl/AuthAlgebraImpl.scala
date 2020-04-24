@@ -65,8 +65,9 @@ final private[auth] class AuthAlgebraImpl[F[_]: Timer] private (
     }
     // send confirmation email logic
     val F2 = (code: VerificationCode) => {
-      val emailTitle    = EmailTitle.spook("Verify your account")
-      val confirmIntent = s"https://ticheck.elementum.ro/account-activation/$code"
+      val emailTitle = EmailTitle.spook("Verify your account")
+      val confirmIntent =
+        s"""<a href="https://ticheck.elementum.ro/account-activation/$code">https://ticheck.elementum.ro/account-activation/$code</a>"""
       val emailMessage = EmailMessage.spook(
         s"Hello from Ticket Checker!\n\nPlease confirm your email address. Your verification code is: $code\n\nYou can also verify your account by clicking $confirmIntent",
       )

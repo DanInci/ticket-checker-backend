@@ -153,7 +153,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
         } yield (orgDAO, OrganizationInvite.fromDAO(inviteDAO, orgDAO), inviteCode)
       }
       emailTitle    = EmailTitle.spook("Invitation into organization")
-      confirmIntent = s"https://ticheck.elementum.ro/join-organization/$inviteCode"
+      confirmIntent = s"""<a href="https://ticheck.elementum.ro/join-organization/$inviteCode">https://ticheck.elementum.ro/join-organization/$inviteCode</a>"""
       emailMessage = EmailMessage.spook(
         s"ou have been invited to join ${organization.name}!\n\nYour invite code is: $inviteCode\n\nYou can also join the organization by clicking $confirmIntent",
       )
