@@ -152,9 +152,10 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
           _ <- organizationInviteSQL.insert(inviteDAO)
         } yield (orgDAO, OrganizationInvite.fromDAO(inviteDAO, orgDAO), inviteCode)
       }
-      emailTitle = EmailTitle.spook("Invitation into organization")
+      emailTitle    = EmailTitle.spook("Invitation into organization")
+      confirmIntent = s"https://ticheck.elementum.ro/join-organization/$inviteCode"
       emailMessage = EmailMessage.spook(
-        s"You have been invited to join ${organization.name}!\n\nYour invite code is: $inviteCode\n\nYou can also join the organization by going to ticheck://join-organization/$inviteCode",
+        s"ou have been invited to join ${organization.name}!\n\nYour invite code is: $inviteCode\n\nYou can also join the organization by clicking $confirmIntent",
       )
       _ <- emailAlgebra
         .sendEmail(
