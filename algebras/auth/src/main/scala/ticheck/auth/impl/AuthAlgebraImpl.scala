@@ -49,25 +49,27 @@ final private[auth] class AuthAlgebraImpl[F[_]: Timer] private (
 
   override def register(regData: RegistrationRequest): F[Unit] = {
     import scala.concurrent.duration._
-    for {
-      verificationCode <- transact {
-        for {
-          _              <- checkRegistrationData(regData)
-          id             <- UserID.generate[ConnectionIO]
-          now            <- timeAlgebra.now[ConnectionIO].map(CreatedAt.spook)
-          hashedPassword <- BCryptPasswordHash.forPassword[ConnectionIO](regData.password)
-          random         <- SecureRandom.newSecureRandom[ConnectionIO]
-          code           <- generateVerificationCode[ConnectionIO](implicitly, random)
-          userDAO = UserRecord(id, regData.email, hashedPassword, regData.name, Some(code), now, None)
-          _ <- userSQL.insert(userDAO)
+    // register logic
+    val F1 = transact {
+      for {
+        _              <- checkRegistrationData(regData)
+        id             <- UserID.generate[ConnectionIO]
+        now            <- timeAlgebra.now[ConnectionIO].map(CreatedAt.spook)
+        hashedPassword <- BCryptPasswordHash.forPassword[ConnectionIO](regData.password)
+        random         <- SecureRandom.newSecureRandom[ConnectionIO]
+        code           <- generateVerificationCode[ConnectionIO](implicitly, random)
+        userDAO = UserRecord(id, regData.email, hashedPassword, regData.name, Some(code), now, None)
+        _ <- userSQL.insert(userDAO)
 
-        } yield code
-      }
-      emailTitle = EmailTitle.spook("Verify your account")
-      emailMessage = EmailMessage.spook(
-        s"Hello from Ticket Checker!\n\nPlease confirm your email address. Your verification code is: $verificationCode\n\nYou can also verify your account by going to ticketChecker://account-activation/$verificationCode",
+      } yield code
+    }
+    // send confirmation email logic
+    val F2 = (code: VerificationCode) => {
+      val emailTitle = EmailTitle.spook("Verify your account")
+      val emailMessage = EmailMessage.spook(
+        s"Hello from Ticket Checker!\n\nPlease confirm your email address. Your verification code is: $code\n\nYou can also verify your account by going to ticketChecker://account-activation/$code",
       )
-      _ <- emailAlgebra
+      emailAlgebra
         .sendEmail(
           regData.email,
           emailTitle,
@@ -77,6 +79,21 @@ final private[auth] class AuthAlgebraImpl[F[_]: Timer] private (
           retries = 1,
           1.second,
         )
+    }
+    // rollback logic
+    val F3 = transact {
+      for {
+        user <- userSQL.findByEmail(regData.email).map(_.get)
+        _    <- userSQL.delete(user.id)
+      } yield ()
+    }
+
+    for {
+      code <- F1
+      _ <- F2(code).guaranteeCase {
+        case ExitCase.Completed => F.unit
+        case _                  => F3
+      }
     } yield ()
   }
 
