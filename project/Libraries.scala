@@ -21,6 +21,7 @@ object Libraries {
   private lazy val postgresqlVersion:  String = "42.3.0"    //java — https://github.com/pgjdbc/pgjdbc/releases
   private lazy val hikariCPVersion:    String = "3.4.2"     //java — https://github.com/brettwooldridge/HikariCP/releases
   private lazy val prepyVersion:       String = "0.0.7"     //https://github.com/alexandrustana/prepy/releases
+  private lazy val javaxMailVersion:   String = "1.6.2"     //https://github.com/javaee/javamail/releases
   private lazy val jwtVersion:         String = "4.2.0"     //https://github.com/pauldijou/jwt-scala/releases
   private lazy val bcryptVersion:      String = "4.1"       //https://github.com/t3hnar/scala-bcrypt/releases
 
@@ -133,6 +134,9 @@ object Libraries {
   //============================================================================================
   //========================================== MISC ============================================
   //============================================================================================
+
+  //https://github.com/javaee/javamail/releases
+  lazy val javaxMail = "com.sun.mail" % "javax.mail" % javaxMailVersion withSources ()
 
   //https://github.com/ChristopherDavenport/fuuid/releases
   lazy val fuuid       = "io.chrisdavenport" %% "fuuid"        % fuuidVersion withSources ()

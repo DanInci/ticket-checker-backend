@@ -164,9 +164,26 @@ lazy val `organizer-statistic` = organizerModule("statistic")
 
 def algebraModule(name: String): Project = Project(s"algebra-$name", file(s"algebras/$name"))
 
+lazy val `algebra-email` = algebraModule("email")
+  .settings(commonSettings)
+  .settings(
+    libraryDependencies ++= Seq(
+      Libraries.javaxMail,
+      Libraries.fs2io,
+      Libraries.fuuid,
+    ),
+  )
+  .dependsOn(
+    `util-core`,
+  )
+  .aggregate(
+    `util-core`,
+  )
+
 lazy val `algebra-auth` = algebraModule("auth")
   .settings(commonSettings)
   .dependsOn(
+    `algebra-email`,
     `dao-organization-membership`,
     `dao-organization`,
     `dao-user`,
@@ -174,6 +191,7 @@ lazy val `algebra-auth` = algebraModule("auth")
     `util-core`,
   )
   .aggregate(
+    `algebra-email`,
     `dao-organization-membership`,
     `dao-organization`,
     `dao-user`,
@@ -217,12 +235,14 @@ lazy val `algebra-ticket` = algebraModule("ticket")
 lazy val `algebra-user` = algebraModule("user")
   .settings(commonSettings)
   .dependsOn(
+    `algebra-email`,
     `dao-organization-membership`,
     `dao-ticket`,
     `dao-user`,
     `util-core`,
   )
   .aggregate(
+    `algebra-email`,
     `dao-organization-membership`,
     `dao-ticket`,
     `dao-user`,
@@ -232,6 +252,7 @@ lazy val `algebra-user` = algebraModule("user")
 lazy val `algebra-organization` = algebraModule("organization")
   .settings(commonSettings)
   .dependsOn(
+    `algebra-email`,
     `dao-user`,
     `dao-organization`,
     `dao-organization-invite`,
@@ -239,6 +260,7 @@ lazy val `algebra-organization` = algebraModule("organization")
     `util-core`,
   )
   .aggregate(
+    `algebra-email`,
     `dao-user`,
     `dao-organization`,
     `dao-organization-invite`,
