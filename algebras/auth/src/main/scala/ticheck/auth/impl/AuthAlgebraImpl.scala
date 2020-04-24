@@ -67,7 +67,7 @@ final private[auth] class AuthAlgebraImpl[F[_]: Timer] private (
     val F2 = (code: VerificationCode) => {
       val emailTitle = EmailTitle.spook("Verify your account")
       val emailMessage = EmailMessage.spook(
-        s"Hello from Ticket Checker!\n\nPlease confirm your email address. Your verification code is: $code\n\nYou can also verify your account by going to ticketChecker://account-activation/$code",
+        s"Hello from Ticket Checker!\n\nPlease confirm your email address. Your verification code is: $code\n\nYou can also verify your account by going to ticheck://account-activation/$code",
       )
       emailAlgebra
         .sendEmail(

@@ -154,7 +154,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
       }
       emailTitle = EmailTitle.spook("Invitation into organization")
       emailMessage = EmailMessage.spook(
-        s"You have been invited to join ${organization.name}!\n\nYour invite code is: $inviteCode\n\nYou can also join the organization by going to ticketChecker://join-organization/$inviteCode",
+        s"You have been invited to join ${organization.name}!\n\nYour invite code is: $inviteCode\n\nYou can also join the organization by going to ticheck://join-organization/$inviteCode",
       )
       _ <- emailAlgebra
         .sendEmail(
