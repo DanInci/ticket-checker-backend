@@ -25,6 +25,6 @@ object EmailConfig extends ConfigLoader[EmailConfig] {
       Email(s).leftMap(e => pureconfig.error.ExceptionThrown(e): pureconfig.error.FailureReason)
     }
   implicit override val configReader: ConfigReader[EmailConfig] = semiauto.deriveReader[EmailConfig]
-  override def default[F[_]: Sync]: F[EmailConfig] = this.load("ticheck.email")
+  override def default[F[_]: Sync]: F[EmailConfig] = this.load("ticket-checker.email")
 
 }

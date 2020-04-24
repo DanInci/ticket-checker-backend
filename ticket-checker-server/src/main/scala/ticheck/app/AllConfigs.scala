@@ -26,7 +26,7 @@ object AllConfigs {
     for {
       serverConfig  <- HttpServerConfig.fromNamespaceR[F]("ticket-checker.http-server")
       dbConfig      <- DBConfig.fromNamespaceR[F]("ticket-checker.database")
-      emailConfig   <- EmailConfig.fromNamespaceR[F]("tichet-checker.email")
+      emailConfig   <- EmailConfig.fromNamespaceR[F]("ticket-checker.email")
       timeConfig    <- TimeConfig.fromNamespaceR[F]("ticket-checker.time")
       jwtAuthConfig <- JWTAuthConfig.fromNamespaceR[F]("ticket-checker.jwt")
     } yield AllConfigs(
