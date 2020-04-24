@@ -70,7 +70,6 @@ object ModuleTicketChecker {
   def concurrent[F[_]](ac: AllConfigs)(
     implicit
     c:          Concurrent[F],
-    tim:        Timer[F],
     t:          Transactor[F],
     cs:         ContextShift[F],
     bioShifter: BlockingShifter[F],

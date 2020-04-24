@@ -17,35 +17,41 @@ final private[user] class UserSQLImpl private (override val timeAlgebra: TimeAlg
     extends UserSQL[ConnectionIO] with UserComposites {
 
   override def findByEmail(email: Email): ConnectionIO[Option[UserRecord]] =
-    sql"""SELECT "id", "email", "hashed_password", "name", "created_at", "edited_at"
+    sql"""SELECT "id", "email", "hashed_password", "name", "verification_code", "created_at", "edited_at"
          | FROM "user"
          | WHERE "email"=$email""".stripMargin.query[UserRecord].option
 
+  override def findByVerificationCode(code: VerificationCode): ConnectionIO[Option[UserRecord]] =
+    sql"""SELECT "id", "email", "hashed_password", "name", "verification_code", "created_at", "edited_at"
+         | FROM "user"
+         | WHERE "verification_code"=$code""".stripMargin.query[UserRecord].option
+
   override def find(pk: UserID): ConnectionIO[Option[UserRecord]] =
-    sql"""SELECT "id", "email", "hashed_password", "name", "created_at", "edited_at"
+    sql"""SELECT "id", "email", "hashed_password", "name", "verification_code", "created_at", "edited_at"
          | FROM "user"
          | WHERE "id"=$pk""".stripMargin.query[UserRecord].option
 
   override def retrieve(pk: UserID)(implicit show: Show[UserID]): ConnectionIO[UserRecord] =
-    sql"""SELECT "id", "email", "hashed_password", "name", "created_at", "edited_at"
+    sql"""SELECT "id", "email", "hashed_password", "name", "verification_code", "created_at", "edited_at"
          | FROM "user"
          | WHERE "id"=$pk""".stripMargin.query[UserRecord].unique
 
   override def insert(e: UserRecord): ConnectionIO[UserID] =
-    sql"""INSERT INTO "user" ("id", "email", "hashed_password", "name", "created_at", "edited_at")
-         | VALUES (${e.id}, ${e.email}, ${e.hashedPassword}, ${e.name}, ${e.createdAt}, ${e.editedAt})""".stripMargin.update
+    sql"""INSERT INTO "user" ("id", "email", "hashed_password", "name", "verification_code", "created_at", "edited_at")
+         | VALUES (${e.id}, ${e.email}, ${e.hashedPassword}, ${e.name}, ${e.verificationCode}, ${e.createdAt}, ${e.editedAt})""".stripMargin.update
       .withUniqueGeneratedKeys[UserID]("id")
 
   override def insertMany(es: Iterable[UserRecord]): ConnectionIO[Unit] = ???
 
   override def update(e: UserRecord): ConnectionIO[UserRecord] =
     sql"""UPDATE "user"
-         | SET "email"=${e.email}, "hashed_password"=${e.hashedPassword}, "name"=${e.name}, "created_at"=${e.createdAt}, "edited_at"=${e.editedAt}
+         | SET "email"=${e.email}, "hashed_password"=${e.hashedPassword}, "name"=${e.name}, "verification_code"=${e.verificationCode}, "created_at"=${e.createdAt}, "edited_at"=${e.editedAt}
          | WHERE "id"=${e.id}""".stripMargin.update.withUniqueGeneratedKeys[UserRecord](
       "id",
       "email",
       "hashed_password",
       "name",
+      "verification_code",
       "created_at",
       "edited_at",
     )

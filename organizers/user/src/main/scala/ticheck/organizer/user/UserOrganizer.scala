@@ -9,6 +9,7 @@ import ticheck.algebra.user.models._
 import ticheck.auth.AuthAlgebra
 import ticheck.auth.models.{LoginRequest, RegistrationRequest}
 import ticheck.dao.organization.invite.InviteStatus
+import ticheck.dao.user.VerificationCode
 import ticheck.effect.Sync
 import ticheck.organizer.user.models.LoginResponse
 
@@ -21,6 +22,8 @@ import ticheck.organizer.user.models.LoginResponse
 trait UserOrganizer[F[_]] {
 
   def register(regData: RegistrationRequest): F[Unit]
+
+  def verifyAccount(code: VerificationCode): F[Unit]
 
   def login(loginData: LoginRequest): F[LoginResponse]
 

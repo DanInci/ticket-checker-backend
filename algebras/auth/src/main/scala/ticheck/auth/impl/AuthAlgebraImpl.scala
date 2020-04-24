@@ -1,10 +1,10 @@
 package ticheck.auth.impl
 
-import ticheck.{CreatedAt, InconsistentState, UserID}
+import ticheck.{CreatedAt, InconsistentState, SecureRandom, UserID}
 import ticheck.auth._
 import ticheck.auth.models._
 import ticheck.dao.organization.membership.OrganizationMembershipSQL
-import ticheck.dao.user.UserSQL
+import ticheck.dao.user._
 import ticheck.dao.user.models.UserRecord
 import ticheck.db._
 import ticheck.effect._
@@ -48,8 +48,18 @@ final private[auth] class AuthAlgebraImpl[F[_]] private (
       id             <- UserID.generate[ConnectionIO]
       now            <- timeAlgebra.now[ConnectionIO].map(CreatedAt.spook)
       hashedPassword <- BCryptPasswordHash.forPassword[ConnectionIO](regData.password)
-      userDAO = UserRecord(id, regData.email, hashedPassword, regData.name, now, None)
+      random         <- SecureRandom.newSecureRandom[ConnectionIO]
+      code           <- generateVerificationCode[ConnectionIO](implicitly, random)
+      userDAO = UserRecord(id, regData.email, hashedPassword, regData.name, Some(code), now, None)
       _ <- userSQL.insert(userDAO)
+    } yield ()
+  }
+
+  override def verify(code: VerificationCode): F[Unit] = transact {
+    for {
+      user <- userSQL.findByVerificationCode(code).flattenOption(VerificationCodeNotValidAnomaly)
+      updatedUser = user.copy(verificationCode = None)
+      _ <- userSQL.update(updatedUser)
     } yield ()
   }
 
@@ -59,10 +69,17 @@ final private[auth] class AuthAlgebraImpl[F[_]] private (
       _ <- BCryptPasswordHash
         .check[ConnectionIO](loginData.password, user.hashedPassword)
         .ifFalseRaise(LoginFailedAnomaly)
+      _                         <- user.verificationCode.ifSomeRaise[ConnectionIO](AccountNotVerifiedAnomaly)
       membershipOrganizationIds <- organizationMembershipSQL.getByUserID(user.id).map(_.map(_.organizationId))
       authCtx = RawAuthCtx(user.id, membershipOrganizationIds)
       token <- JWTAuthToken.create[ConnectionIO, RawAuthCtx](authConfig)(authCtx)
     } yield token
+  }
+
+  private def generateVerificationCode[H[_]: Sync: SecureRandom]: H[VerificationCode] = {
+    val InviteCodeLength   = 8
+    val InviteCodeAlphabet = "ABCDEFGHI123456789"
+    SecureRandom[H].randomString(InviteCodeAlphabet)(InviteCodeLength).map(VerificationCode.spook)
   }
 
   private def checkRegistrationData(regData: RegistrationRequest): ConnectionIO[Unit] =

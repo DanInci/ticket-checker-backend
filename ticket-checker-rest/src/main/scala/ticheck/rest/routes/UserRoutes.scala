@@ -7,6 +7,7 @@ import ticheck.{PagingInfo, UserID}
 import ticheck.algebra.user.models.UserDefinition
 import ticheck.auth.models.{LoginRequest, RegistrationRequest}
 import ticheck.dao.organization.invite.InviteStatus
+import ticheck.dao.user.VerificationCode
 import ticheck.effect._
 import ticheck.http.{QueryParamInstances, RoutesHelpers}
 import ticheck.rest._
@@ -30,7 +31,11 @@ final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserO
         .leftMap(t => ParseFailure("Query param decoding failed", t.getMessage))
         .toValidatedNel
 
-  object InviteStatusQueryParamMatcher extends OptionalQueryParamDecoderMatcher[InviteStatus]("status")
+  implicit def verificationCodeQueryParamMatcher: QueryParamDecoder[VerificationCode] =
+    phantomTypeQueryParamDecoder[F, String, VerificationCode.Tag]
+
+  object InviteStatusQueryParamMatcher     extends OptionalQueryParamDecoderMatcher[InviteStatus]("status")
+  object VerificationCodeQueryParamMatcher extends QueryParamDecoderMatcher[VerificationCode]("code")
 
   private val usersRoutes: UserAuthCtxRoutes[F] = UserAuthCtxRoutes[F] {
     case GET -> Root / `users-route` / FUUIDVar(uid) as user =>
@@ -66,6 +71,12 @@ final private[rest] case class UserRoutes[F[_]](private val userOrganizer: UserO
         regData <- req.as[RegistrationRequest]
         _       <- userOrganizer.register(regData)
         resp    <- Created()
+      } yield resp
+
+    case POST -> Root / "verify" :? VerificationCodeQueryParamMatcher(code) =>
+      for {
+        _    <- userOrganizer.verifyAccount(code)
+        resp <- Ok()
       } yield resp
 
     case req @ POST -> Root / "login" =>

@@ -29,6 +29,7 @@ CREATE TABLE "user" (
     "email"             VARCHAR UNIQUE NOT NULL,
     "hashed_password"   VARCHAR NOT NULL,
     "name"              VARCHAR NOT NULL,
+    "verification_code" VARCHAR NULL,
     "created_at"        TIMESTAMP NOT NULL,
     "edited_at"         TIMESTAMP NULL
 );
@@ -62,6 +63,8 @@ ALTER TABLE "organization_membership" ADD CONSTRAINT organization_membership_inv
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_organization_id_fk FOREIGN KEY ("organization_id") REFERENCES "organization" ("id") ON DELETE CASCADE;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_sold_by_id_fk FOREIGN KEY ("sold_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
 ALTER TABLE "ticket" ADD CONSTRAINT ticket_validated_by_id_fk FOREIGN KEY ("validated_by_id") REFERENCES "user" ("id") ON DELETE SET NULL;
+
+CREATE UNIQUE INDEX CONCURRENTLY verification_code ON "user" ("verification_code");
 
 CREATE UNIQUE INDEX CONCURRENTLY invitation_code ON "organization_invite" ("code");
 ALTER TABLE "organization_invite" ADD CONSTRAINT organization_invite_unique_code UNIQUE USING INDEX invitation_code;

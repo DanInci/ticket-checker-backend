@@ -12,6 +12,9 @@ import ticheck.PhantomType
   */
 package object user {
 
+  object VerificationCode extends PhantomType[String]
+  type VerificationCode = VerificationCode.Type
+
   object HashedPassword extends PhantomType[String]
   type HashedPassword = HashedPassword.Type
 

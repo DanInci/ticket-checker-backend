@@ -9,6 +9,7 @@ import ticheck.algebra.user.models._
 import ticheck.auth.AuthAlgebra
 import ticheck.auth.models.{LoginRequest, RegistrationRequest}
 import ticheck.dao.organization.invite.InviteStatus
+import ticheck.dao.user.VerificationCode
 import ticheck.organizer.user.UserOrganizer
 import ticheck.organizer.user.models.LoginResponse
 import ticheck.effect._
@@ -27,6 +28,8 @@ final private[user] class UserOrganizerImpl[F[_]](
     extends UserOrganizer[F] {
 
   override def register(regData: RegistrationRequest): F[Unit] = authAlgebra.register(regData)
+
+  override def verifyAccount(code: VerificationCode): F[Unit] = authAlgebra.verify(code)
 
   override def login(loginData: LoginRequest): F[LoginResponse] =
     for {

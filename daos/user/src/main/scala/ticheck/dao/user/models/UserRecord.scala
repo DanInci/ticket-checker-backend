@@ -10,10 +10,11 @@ import ticheck.dao.user._
   *
   */
 case class UserRecord(
-  id:             UserID,
-  email:          Email,
-  hashedPassword: HashedPassword,
-  name:           Name,
-  createdAt:      CreatedAt,
-  editedAt:       Option[EditedAt],
+  id:               UserID,
+  email:            Email,
+  hashedPassword:   HashedPassword,
+  name:             Name,
+  verificationCode: Option[VerificationCode],
+  createdAt:        CreatedAt,
+  editedAt:         Option[EditedAt],
 )

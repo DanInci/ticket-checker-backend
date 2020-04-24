@@ -12,12 +12,21 @@ case object LoginFailedAnomaly extends UnauthorizedAnomaly("Login attempt has fa
   override val id: AnomalyID = AnomalyIDs.AuthenticationFailedAnomalyID
 }
 
+case object AccountNotVerifiedAnomaly extends UnauthorizedAnomaly("Account has not been verified") {
+  override val id: AnomalyID = AnomalyIDs.AccountNotVerifiedAnomalyID
+}
+
+case object VerificationCodeNotValidAnomaly extends UnauthorizedAnomaly("Verification code is not valid") {
+  override val id: AnomalyID = AnomalyIDs.VerificationCodeNotValidAnomalyID
+}
+
 case object PasswordDoesNotMeetCriteriaAnomaly
     extends InvalidInputAnomaly(
       s"Password must be at least 6 characters long, including an uppercase and a lowercase letter",
     ) {
   override val id: AnomalyID = AnomalyIDs.InvalidPasswordAnomalyID
 }
+
 case class EmailAlreadyRegisteredAnomaly(email: Email)
     extends ConflictAnomaly(
       s"Email '$email' is already registered to another account",

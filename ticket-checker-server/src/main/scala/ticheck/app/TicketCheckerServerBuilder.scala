@@ -28,7 +28,6 @@ object TicketCheckerServerBuilder {
   )(
     implicit
     F:               Concurrent[F],
-    timer:           Timer[F],
     cs:              ContextShift[F],
     blockingShifter: BlockingShifter[F],
     dbConnEC:        DoobieConnectionEC,
@@ -42,7 +41,6 @@ object TicketCheckerServerBuilder {
   )(
     implicit
     private val F:              Concurrent[F],
-    private val timer:          Timer[F],
     private val contextShift:   ContextShift[F],
     private val shifter:        BlockingShifter[F],
     private val dbConnEC:       DoobieConnectionEC,
@@ -65,7 +63,6 @@ object TicketCheckerServerBuilder {
 
         mkModuleF: F[ModuleTicketChecker[F]] = ModuleTicketChecker.concurrent[F](ac)(
           c          = F,
-          tim        = timer,
           t          = transactor,
           cs         = contextShift,
           bioShifter = shifter,

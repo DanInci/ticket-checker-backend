@@ -40,7 +40,6 @@ object TicketCheckerApp extends PureharmIOApp {
 
       builder = TicketCheckerServerBuilder.build[F](configs)(
         F               = F,
-        timer           = timer,
         cs              = contextShift,
         blockingShifter = pools.blockingShifter,
         dbConnEC        = pools.doobieConn,

@@ -14,4 +14,6 @@ trait UserSQL[H[_]] extends DAOAlgebra[H, UserRecord, UserID] {
 
   def findByEmail(email: Email): H[Option[UserRecord]]
 
+  def findByVerificationCode(code: VerificationCode): H[Option[UserRecord]]
+
 }
