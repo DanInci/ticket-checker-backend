@@ -20,6 +20,8 @@ trait ModuleAuthAlgebra[F[_]] {
 
   implicit protected def transactor: Transactor[F]
 
+  implicit protected def timer: Timer[F]
+
   protected def authConfig: JWTAuthConfig
 
   def authAlgebra: F[AuthAlgebra[F]] = _authAlgebra

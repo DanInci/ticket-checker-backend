@@ -24,6 +24,8 @@ trait ModuleOrganizationAlgebra[F[_]] {
 
   implicit protected def transactor: Transactor[F]
 
+  implicit protected def timer: Timer[F]
+
   def organizationModuleAlgebra: F[OrganizationModuleAlgebra[F]] = _organizationModuleAlgebra
 
   private lazy val _organizationModuleAlgebra: F[OrganizationModuleAlgebra[F]] =

@@ -41,6 +41,8 @@ trait ModuleTicketChecker[F[_]]
 
   implicit protected def blockingShifter: BlockingShifter[F]
 
+  implicit protected def timer: Timer[F]
+
   protected def allConfigs: AllConfigs
 
   override protected def timeConfig: TimeConfig = allConfigs.timeConfig
@@ -73,6 +75,7 @@ object ModuleTicketChecker {
   def concurrent[F[_]](ac: AllConfigs)(
     implicit
     c:          Concurrent[F],
+    tim:        Timer[F],
     t:          Transactor[F],
     cs:         ContextShift[F],
     bioShifter: BlockingShifter[F],
@@ -81,6 +84,8 @@ object ModuleTicketChecker {
       override protected def contextShift: ContextShift[F] = cs
 
       override protected def blockingShifter: BlockingShifter[F] = bioShifter
+
+      implicit protected def timer: Timer[F] = tim
 
       override protected def C: Concurrent[F] = c
 

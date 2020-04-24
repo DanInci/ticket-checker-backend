@@ -13,7 +13,8 @@ import ticheck.dao.organization.models.OrganizationRecord
 import ticheck.dao.user.UserSQL
 import ticheck.db._
 import ticheck.effect._
-import ticheck.email.EmailAlgebra
+import ticheck.email.{EmailAlgebra, EmailMessage, EmailTitle}
+import ticheck.logger._
 import ticheck.time.TimeAlgebra
 
 /**
@@ -29,8 +30,10 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
   organizationSQL:           OrganizationSQL[ConnectionIO],
   organizationInviteSQL:     OrganizationInviteSQL[ConnectionIO],
   organizationMembershipSQL: OrganizationMembershipSQL[ConnectionIO],
-)(implicit F:                Async[F], transactor: Transactor[F])
+)(implicit F:                Async[F], transactor: Transactor[F], timer: Timer[F])
     extends OrganizationAlgebra[F] with OrganizationStatisticsAlgebra[F] with DBOperationsAlgebra[F] {
+
+  implicit private val loggerF: Logger[F] = Logger.getLogger[F]
 
   override def getAll(filter: Option[List[OrganizationID]], pagingInfo: PagingInfo)(
     implicit userId:          UserID,
@@ -127,26 +130,46 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
     } yield invites
   }
 
-  override def sendInvite(id: OrganizationID, definition: OrganizationInviteDefinition): F[OrganizationInvite] =
-    transact {
-      for {
-        orgDAO     <- checkSendInvite(id, definition)
-        inviteId   <- OrganizationInviteID.generate[ConnectionIO]
-        random     <- SecureRandom.newSecureRandom[ConnectionIO]
-        inviteCode <- generateInviteCode[ConnectionIO](implicitly, random)
-        now        <- timeAlgebra.now[ConnectionIO].map(InvitedAt.spook)
-        inviteDAO = OrganizationInviteRecord(
-          inviteId,
-          id,
-          definition.email,
-          inviteCode,
-          InviteStatus.InvitePending,
-          None,
-          now,
+  override def sendInvite(id: OrganizationID, definition: OrganizationInviteDefinition): F[OrganizationInvite] = {
+    import scala.concurrent.duration._
+    for {
+      (organization, invitation, inviteCode) <- transact {
+        for {
+          orgDAO     <- checkSendInvite(id, definition)
+          inviteId   <- OrganizationInviteID.generate[ConnectionIO]
+          random     <- SecureRandom.newSecureRandom[ConnectionIO]
+          inviteCode <- generateInviteCode[ConnectionIO](implicitly, random)
+          now        <- timeAlgebra.now[ConnectionIO].map(InvitedAt.spook)
+          inviteDAO = OrganizationInviteRecord(
+            inviteId,
+            id,
+            definition.email,
+            inviteCode,
+            InviteStatus.InvitePending,
+            None,
+            now,
+          )
+          _ <- organizationInviteSQL.insert(inviteDAO)
+        } yield (orgDAO, OrganizationInvite.fromDAO(inviteDAO, orgDAO), inviteCode)
+      }
+      emailTitle = EmailTitle.spook("Invitation into organization")
+      emailMessage = EmailMessage.spook(
+        s"You have been invited to join ${organization.name}!\n\nYour invite code is: $inviteCode\n\nYou can also join the organization by going to ticketChecker://join-organization/$inviteCode",
+      )
+      _ <- emailAlgebra
+        .sendEmail(
+          invitation.email,
+          emailTitle,
+          emailMessage,
         )
-        _ <- organizationInviteSQL.insert(inviteDAO)
-      } yield OrganizationInvite.fromDAO(inviteDAO, orgDAO)
-    }
+        .reattempt(
+          (e, s) => loggerF.warn(e)(s"Failed to send 'Invitation into organization' Email to '${invitation.email}'. $s"),
+        )(
+          retries = 1,
+          1.second,
+        )
+    } yield invitation
+  }
 
   override def cancelInvite(id: OrganizationID, inviteId: OrganizationInviteID): F[Unit] = transact {
     for {
@@ -421,7 +444,7 @@ final private[organization] class OrganizationAlgebraImpl[F[_]] private (
 
 private[organization] object OrganizationAlgebraImpl {
 
-  def async[F[_]: Async: Transactor](
+  def async[F[_]: Async: Transactor: Timer](
     timeAlgebra:               TimeAlgebra,
     emailAlgebra:              EmailAlgebra[F],
     userSQL:                   UserSQL[ConnectionIO],

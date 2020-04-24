@@ -8,7 +8,8 @@ import ticheck.dao.user._
 import ticheck.dao.user.models.UserRecord
 import ticheck.db._
 import ticheck.effect._
-import ticheck.email.EmailAlgebra
+import ticheck.logger._
+import ticheck.email.{EmailAlgebra, EmailMessage, EmailTitle}
 import ticheck.time.TimeAlgebra
 
 /**
@@ -17,7 +18,7 @@ import ticheck.time.TimeAlgebra
   * @since 4/8/2020
   *
   */
-final private[auth] class AuthAlgebraImpl[F[_]] private (
+final private[auth] class AuthAlgebraImpl[F[_]: Timer] private (
   authConfig:                JWTAuthConfig,
   timeAlgebra:               TimeAlgebra,
   emailAlgebra:              EmailAlgebra[F],
@@ -27,6 +28,8 @@ final private[auth] class AuthAlgebraImpl[F[_]] private (
   implicit F: Async[F],
   transactor: Transactor[F],
 ) extends AuthAlgebra[F] with DBOperationsAlgebra[F] {
+
+  implicit private val loggerF: Logger[F] = Logger.getLogger[F]
 
   override def convert(rawAuthCtx: RawAuthCtx): F[UserAuthCtx] = transact {
     for {
@@ -44,16 +47,36 @@ final private[auth] class AuthAlgebraImpl[F[_]] private (
     } yield userAuthCtx
   }
 
-  override def register(regData: RegistrationRequest): F[Unit] = transact {
+  override def register(regData: RegistrationRequest): F[Unit] = {
+    import scala.concurrent.duration._
     for {
-      _              <- checkRegistrationData(regData)
-      id             <- UserID.generate[ConnectionIO]
-      now            <- timeAlgebra.now[ConnectionIO].map(CreatedAt.spook)
-      hashedPassword <- BCryptPasswordHash.forPassword[ConnectionIO](regData.password)
-      random         <- SecureRandom.newSecureRandom[ConnectionIO]
-      code           <- generateVerificationCode[ConnectionIO](implicitly, random)
-      userDAO = UserRecord(id, regData.email, hashedPassword, regData.name, Some(code), now, None)
-      _ <- userSQL.insert(userDAO)
+      verificationCode <- transact {
+        for {
+          _              <- checkRegistrationData(regData)
+          id             <- UserID.generate[ConnectionIO]
+          now            <- timeAlgebra.now[ConnectionIO].map(CreatedAt.spook)
+          hashedPassword <- BCryptPasswordHash.forPassword[ConnectionIO](regData.password)
+          random         <- SecureRandom.newSecureRandom[ConnectionIO]
+          code           <- generateVerificationCode[ConnectionIO](implicitly, random)
+          userDAO = UserRecord(id, regData.email, hashedPassword, regData.name, Some(code), now, None)
+          _ <- userSQL.insert(userDAO)
+
+        } yield code
+      }
+      emailTitle = EmailTitle.spook("Verify your account")
+      emailMessage = EmailMessage.spook(
+        s"Hello from Ticket Checker!\n\nPlease confirm your email address. Your verification code is: $verificationCode\n\nYou can also verify your account by going to ticketChecker://account-activation/$verificationCode",
+      )
+      _ <- emailAlgebra
+        .sendEmail(
+          regData.email,
+          emailTitle,
+          emailMessage,
+        )
+        .reattempt((e, s) => loggerF.warn(e)(s"Failed to send 'Verify your account' Email to '${regData.email}'. $s"))(
+          retries = 1,
+          1.second,
+        )
     } yield ()
   }
 
@@ -97,7 +120,7 @@ final private[auth] class AuthAlgebraImpl[F[_]] private (
 
 private[auth] object AuthAlgebraImpl {
 
-  def async[F[_]: Async: Transactor](
+  def async[F[_]: Async: Transactor: Timer](
     authConfig:                JWTAuthConfig,
     timeAlgebra:               TimeAlgebra,
     emailAlgebra:              EmailAlgebra[F],
