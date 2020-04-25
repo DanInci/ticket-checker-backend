@@ -15,14 +15,19 @@ sealed trait TicketCategory {
 
 object TicketCategory {
 
-  implicit def ticketCategoryCodec: Codec[TicketCategory] = Codec.from(ticketCategoryDecoder, ticketCategoryEncoder)
+  implicit def ticketCategoryCodec: Codec[TicketCategory] =
+    Codec.from(ticketCategoryDecoder, ticketCategoryEncoder)
 
-  private val ticketCategoryEncoder: Encoder[TicketCategory] = Encoder.apply[String].contramap(_.asString)
+  private val ticketCategoryEncoder: Encoder[TicketCategory] =
+    Encoder.apply[String].contramap(_.asString)
   private val ticketCategoryDecoder: Decoder[TicketCategory] =
-    Decoder.apply[String].emap(s => TicketCategory.fromString(s).leftMap(_.getMessage))
+    Decoder
+      .apply[String]
+      .emap(s => TicketCategory.fromString(s).leftMap(_.getMessage))
 
-  private val SoldString      = "SOLD"
+  private val SoldString = "SOLD"
   private val ValidatedString = "VALIDATED"
+  private val NotValidatedString = "NOTVALIDATED"
 
   final object SoldTicket extends TicketCategory {
     override def asString: String = SoldString
@@ -30,16 +35,22 @@ object TicketCategory {
   final object ValidatedTicket extends TicketCategory {
     override def asString: String = ValidatedString
   }
+  final object NotValidatedTicket extends TicketCategory {
+    override def asString: String = NotValidatedString
+  }
   private val categoryMap: Map[String, TicketCategory] =
     Map(
-      SoldString      -> SoldTicket,
+      SoldString -> SoldTicket,
       ValidatedString -> ValidatedTicket,
+      NotValidatedString -> NotValidatedTicket
     )
 
-  def fromString(categoryString: String): Attempt[TicketCategory] = categoryMap.get(categoryString) match {
-    case None    => Attempt.raiseError(InvalidTicketCategoryAnomaly(categoryString))
-    case Some(r) => Attempt.pure(r)
-  }
+  def fromString(categoryString: String): Attempt[TicketCategory] =
+    categoryMap.get(categoryString) match {
+      case None =>
+        Attempt.raiseError(InvalidTicketCategoryAnomaly(categoryString))
+      case Some(r) => Attempt.pure(r)
+    }
 
   def unsafe(s: String): TicketCategory = this.fromString(s) match {
     case Left(e)      => throw e

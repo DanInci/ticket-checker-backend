@@ -1,9 +1,19 @@
 package ticheck.dao.ticket.impl
 
 import doobie.util.fragment.Fragment
-import ticheck.dao.ticket.TicketCategory.{SoldTicket, ValidatedTicket}
+import ticheck.dao.ticket.TicketCategory.{
+  NotValidatedTicket,
+  SoldTicket,
+  ValidatedTicket
+}
 import ticheck.{Count, Limit, Offset, OrganizationID, UserID}
-import ticheck.dao.ticket.{EndDate, StartDate, TicketCategory, TicketPK, TicketSQL}
+import ticheck.dao.ticket.{
+  EndDate,
+  StartDate,
+  TicketCategory,
+  TicketPK,
+  TicketSQL
+}
 import ticheck.dao.ticket.models.TicketRecord
 import ticheck.db._
 import ticheck.effect._
@@ -15,13 +25,14 @@ import ticheck.time.TimeAlgebra
   * @since 4/6/2020
   *
   */
-final private[ticket] class TicketSQLImpl private (override val timeAlgebra: TimeAlgebra)
-    extends TicketSQL[ConnectionIO] with TicketComposites {
+final private[ticket] class TicketSQLImpl private (
+  override val timeAlgebra: TimeAlgebra
+) extends TicketSQL[ConnectionIO]
+    with TicketComposites {
 
-  override def countBy(
-    organizationId: OrganizationID,
-    byCategory:     Option[TicketCategory],
-    searchVal:      Option[String],
+  override def countBy(organizationId: OrganizationID,
+                       byCategory: Option[TicketCategory],
+                       searchVal: Option[String],
   ): ConnectionIO[Count] = {
     val organizationIdWC = Some(s""""organization_id"='$organizationId'""")
     val byCategoryWC = byCategory.map {
@@ -29,38 +40,45 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
         s""""sold_at" IS NOT NULL"""
       case ValidatedTicket =>
         s""""validated_at" IS NOT NULL"""
+      case NotValidatedTicket =>
+        s""""validated_at" IS NULL"""
       case _ => ""
     }
     val searchValWC = searchVal.map(
       s =>
         s"""(UPPER("sold_to") LIKE UPPER('$s%') OR UPPER("sold_by_name") LIKE UPPER('$s%') OR UPPER("validated_by_name") LIKE UPPER('$s%'))""",
     )
-    val WCs         = List(organizationIdWC, byCategoryWC, searchValWC).flatten
+    val WCs = List(organizationIdWC, byCategoryWC, searchValWC).flatten
     val whereClause = WCs.mkString("WHERE ", " AND ", "")
 
-    (sql"""SELECT COUNT(*) FROM "ticket" """.stripMargin ++ Fragment.const(whereClause)).query[Count].unique
+    (sql"""SELECT COUNT(*) FROM "ticket" """.stripMargin ++ Fragment.const(
+      whereClause
+    )).query[Count].unique
   }
 
-  override def countTicketsBetweenDates(
-    byCategory: TicketCategory,
-    startDate:  StartDate,
-    endDate:    EndDate,
+  override def countTicketsBetweenDates(byCategory: TicketCategory,
+                                        startDate: StartDate,
+                                        endDate: EndDate,
   ): ConnectionIO[Count] = {
     val whereClause = byCategory match {
-      case SoldTicket      => s"""WHERE "sold_at" >= '$startDate' AND "sold_at" < '$endDate'"""
-      case ValidatedTicket => s"""WHERE "validated_at" >= '$startDate' AND "validated_at" < '$endDate'"""
+      case SoldTicket =>
+        s"""WHERE "sold_at" >= '$startDate' AND "sold_at" < '$endDate'"""
+      case ValidatedTicket =>
+        s"""WHERE "validated_at" >= '$startDate' AND "validated_at" < '$endDate'"""
+      case _ => ""
     }
 
-    (sql"""SELECT COUNT(*) FROM "ticket" """.stripMargin ++ Fragment.const(whereClause)).query[Count].unique
+    (sql"""SELECT COUNT(*) FROM "ticket" """.stripMargin ++ Fragment.const(
+      whereClause
+    )).query[Count].unique
   }
 
-  override def getAllForOrganization(
-    organizationId: OrganizationID,
-    offset:         Offset,
-    limit:          Limit,
-    byCategory:     Option[TicketCategory],
-    byUserId:       Option[UserID],
-    searchVal:      Option[String],
+  override def getAllForOrganization(organizationId: OrganizationID,
+                                     offset: Offset,
+                                     limit: Limit,
+                                     byCategory: Option[TicketCategory],
+                                     byUserId: Option[UserID],
+                                     searchVal: Option[String],
   ): ConnectionIO[List[TicketRecord]] = {
     val organizationIdWC = Some(s""""organization_id"='$organizationId'""")
     val byCategoryWC = byCategory.map {
@@ -68,6 +86,8 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
         s""""sold_at" IS NOT NULL"""
       case ValidatedTicket =>
         s""""validated_at" IS NOT NULL"""
+      case NotValidatedTicket =>
+        s""""validated_at" IS NULL"""
       case _ => ""
     }
     val byUserIdWC = byUserId.map(
@@ -76,7 +96,7 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
           case Some(SoldTicket)      => s""""sold_by_id"='$uid'"""
           case Some(ValidatedTicket) => s""""validated_by_id"='$uid'"""
           case _                     => s"""("sold_by_id"='$uid' OR "validated_by_id"='$uid')"""
-        },
+      },
     )
     val searchValWC = searchVal.map(
       s =>
@@ -84,37 +104,55 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
           case Some(_) => s"""UPPER("sold_to") LIKE UPPER('$s%')"""
           case None =>
             s"""(UPPER("sold_to") LIKE UPPER('$s%') OR UPPER("sold_by_name") LIKE UPPER('$s%') OR UPPER("validated_by_name") LIKE UPPER('$s%'))"""
-        },
+      },
     )
-    val WCs         = List(organizationIdWC, byCategoryWC, byUserIdWC, searchValWC).flatten
+    val WCs =
+      List(organizationIdWC, byCategoryWC, byUserIdWC, searchValWC).flatten
     val whereClause = WCs.mkString("WHERE ", " AND ", "")
 
     (sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"
           | FROM "ticket" """.stripMargin
       ++ Fragment.const(whereClause) ++
-      sql""" ORDER BY "sold_at" DESC OFFSET $offset LIMIT $limit """.stripMargin).query[TicketRecord].to[List]
+      sql""" ORDER BY "sold_at" DESC OFFSET $offset LIMIT $limit """.stripMargin)
+      .query[TicketRecord]
+      .to[List]
   }
 
-  override def findByUserID(userId: UserID, category: Option[TicketCategory]): ConnectionIO[List[TicketRecord]] = {
+  override def findByUserID(
+    userId: UserID,
+    category: Option[TicketCategory]
+  ): ConnectionIO[List[TicketRecord]] = {
     val whereClause = category match {
-      case None                                 => s"""WHERE "sold_by_id"='$userId' OR "validated_by_id"='$userId'"""
-      case Some(TicketCategory.SoldTicket)      => s"""WHERE "sold_by_id"='$userId'"""
-      case Some(TicketCategory.ValidatedTicket) => s"""WHERE "validated_by_id"='$userId'"""
+      case None =>
+        s"""WHERE "sold_by_id"='$userId' OR "validated_by_id"='$userId'"""
+      case Some(TicketCategory.SoldTicket) =>
+        s"""WHERE "sold_by_id"='$userId'"""
+      case Some(TicketCategory.ValidatedTicket) =>
+        s"""WHERE "validated_by_id"='$userId'"""
+      case Some(_) => ""
     }
 
     (sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"
-          | FROM "ticket" """.stripMargin ++ Fragment.const(whereClause)).query[TicketRecord].to[List]
+          | FROM "ticket" """.stripMargin ++ Fragment.const(whereClause))
+      .query[TicketRecord]
+      .to[List]
   }
 
   override def find(pk: TicketPK): ConnectionIO[Option[TicketRecord]] =
     sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"
          | FROM "ticket"
-         | WHERE "id"=${pk._1} AND "organization_id"=${pk._2}""".stripMargin.query[TicketRecord].option
+         | WHERE "id"=${pk._1} AND "organization_id"=${pk._2}""".stripMargin
+      .query[TicketRecord]
+      .option
 
-  override def retrieve(pk: TicketPK)(implicit show: Show[TicketPK]): ConnectionIO[TicketRecord] =
+  override def retrieve(
+    pk: TicketPK
+  )(implicit show: Show[TicketPK]): ConnectionIO[TicketRecord] =
     sql"""SELECT "id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at"
          | FROM "ticket"
-         | WHERE "id"=${pk._1} AND "organization_id"=${pk._2}""".stripMargin.query[TicketRecord].unique
+         | WHERE "id"=${pk._1} AND "organization_id"=${pk._2}""".stripMargin
+      .query[TicketRecord]
+      .unique
 
   override def insert(e: TicketRecord): ConnectionIO[TicketPK] =
     sql"""INSERT INTO "ticket" ("id", "organization_id", "sold_to", "sold_to_birthday", "sold_to_telephone", "sold_by_id", "sold_by_name", "sold_at", "validated_by_id", "validated_by_name", "validated_at")
@@ -141,7 +179,9 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
         "validated_at",
       )
 
-  override def updateMany[M[_]](es: M[TicketRecord])(implicit evidence$1: Traverse[M]): ConnectionIO[Unit] =
+  override def updateMany[M[_]](
+    es: M[TicketRecord]
+  )(implicit evidence$1: Traverse[M]): ConnectionIO[Unit] =
     es.traverse(update).void
 
   override def delete(pk: TicketPK): ConnectionIO[Unit] =
@@ -149,9 +189,12 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
 
   override def deleteMany(pks: Iterable[TicketPK]): ConnectionIO[Unit] = ???
 
-  override def exists(pk: TicketPK): ConnectionIO[Boolean] = find(pk).map(_.isDefined)
+  override def exists(pk: TicketPK): ConnectionIO[Boolean] =
+    find(pk).map(_.isDefined)
 
-  override def existsAtLeastOne(pks: Iterable[TicketPK]): ConnectionIO[Boolean] = ???
+  override def existsAtLeastOne(
+    pks: Iterable[TicketPK]
+  ): ConnectionIO[Boolean] = ???
 
   override def existAll(pks: Iterable[TicketPK]): ConnectionIO[Boolean] = ???
 
@@ -159,7 +202,9 @@ final private[ticket] class TicketSQLImpl private (override val timeAlgebra: Tim
 
 private[ticket] object TicketSQLImpl {
 
-  def sync[F[_]](timeAlgebra: TimeAlgebra)(implicit F: Sync[F]): F[TicketSQL[ConnectionIO]] =
+  def sync[F[_]](
+    timeAlgebra: TimeAlgebra
+  )(implicit F: Sync[F]): F[TicketSQL[ConnectionIO]] =
     F.pure(new TicketSQLImpl(timeAlgebra))
 
 }
