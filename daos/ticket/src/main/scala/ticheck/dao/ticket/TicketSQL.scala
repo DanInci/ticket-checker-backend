@@ -1,8 +1,8 @@
 package ticheck.dao.ticket
 
-import ticheck.{Count, Limit, Offset, OrganizationID, UserID}
-import ticheck.db.DAOAlgebra
 import ticheck.dao.ticket.models.TicketRecord
+import ticheck.db.DAOAlgebra
+import ticheck.{Count, Limit, Offset, OrganizationID, UserID}
 
 /**
   *
@@ -21,18 +21,18 @@ trait TicketSQL[H[_]] extends DAOAlgebra[H, TicketRecord, TicketPK] {
     searchVal:      Option[String],
   ): H[List[TicketRecord]]
 
-  def findByUserID(userId: UserID, category: Option[TicketCategory] = None): H[List[TicketRecord]]
+  def findByUserID(
+    userId:   UserID,
+    category: Option[TicketCategory] = None,
+  ): H[List[TicketRecord]]
 
   def countTicketsBetweenDates(
-    byCategory: TicketCategory,
-    startDate:  StartDate,
-    endDate:    EndDate,
+    organizationId: OrganizationID,
+    byCategory:     TicketCategory,
+    startDate:      StartDate,
+    endDate:        EndDate,
   ): H[Count]
 
-  def countBy(
-    organizationId: OrganizationID,
-    byCategory:     Option[TicketCategory],
-    searchVal:      Option[String],
-  ): H[Count]
+  def countBy(organizationId: OrganizationID, byCategory: Option[TicketCategory], searchVal: Option[String]): H[Count]
 
 }
