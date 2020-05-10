@@ -10,3 +10,30 @@ services:
       - POSTGRES_DB=ticket_checker
       - POSTGRES_USER=ticket-user
       - POSTGRES_PASSWORD=ticket-password
+
+  tc-server:
+    image: ticket_checker_server
+    container_name: ticket_checker_server
+    build: .
+    restart: unless-stopped
+    ports:
+      - ${TC_HTTP_SERVER_HOST:-8080}:8080
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    environment:
+      TC_DB_URL: "${TC_DB_URL}"
+      TC_DB_USER: "${TC_DB_USER}"
+      TC_DB_PASS: "${TC_DB_PASS}"
+
+      TC_EMAIL_FROM: "${TC_EMAIL_FROM}"
+      TC_EMAIL_SMTP_USERNAME: "${TC_EMAIL_SMTP_USERNAME}"
+      TC_EMAIL_SMTP_PASSWORD: "${TC_EMAIL_SMTP_PASSWORD}"
+      TC_EMAIL_SMTP_HOST_NAME: "${TC_EMAIL_SMTP_HOST_NAME}"
+      TC_EMAIL_SMTP_PORT: "${TC_EMAIL_SMTP_PORT}"
+
+      TC_TIME_ZONE_ID: "Europe/Bucharest"
+
+      TC_JWT_EXPIRATION: "60 days"
+      TC_JWT_SECRET_KEY: "${TC_JWT_SECRET_KEY}"

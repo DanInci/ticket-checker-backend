@@ -6,8 +6,8 @@ import sbt._
   */
 object Libraries {
 
-  private lazy val pureharmVersion:    String = "0.0.5-RC2" //https://github.com/busymachines/pureharm/releases
-  private lazy val pureharmAWSVersion: String = "0.0.4-M3"  //https://github.com/busymachines/pureharm-aws/releases
+  private lazy val pureharmVersion:    String = "0.0.5"     //https://github.com/busymachines/pureharm/releases
+  private lazy val pureharmAWSVersion: String = "0.0.4-RC1" //https://github.com/busymachines/pureharm-aws/releases
   private lazy val catsVersion:        String = "2.1.1"     //https://github.com/typelevel/cats/releases
   private lazy val catsEffectVersion:  String = "2.1.2"     //https://github.com/typelevel/cats-effect/releases
   private lazy val fs2Version:         String = "2.2.2"     //https://github.com/functional-streams-for-scala/fs2/releases

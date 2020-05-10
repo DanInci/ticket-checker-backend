@@ -25,7 +25,7 @@ lazy val root = (project in file("."))
 lazy val `ticket-checker-server` = Project(s"ticket-checker-server", file("ticket-checker-server"))
   .enablePlugins(PackPlugin)
   .settings(commonSettings)
-  .settings(serverPackSettings("ticket-checker-server" -> "com.ticket.checker.TicketCheckerApp"))
+  .settings(serverPackSettings("ticket-checker-server" -> "ticheck.app.TicketCheckerApp"))
   .dependsOn(
     `ticket-checker-rest`,
     `organizer-organization`,
