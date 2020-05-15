@@ -11,29 +11,38 @@ services:
       - POSTGRES_USER=ticket-user
       - POSTGRES_PASSWORD=ticket-password
 
+  load-balancer:
+    image: traefik:v2.2
+    container_name: ticket_checker_lb
+    command: --api.insecure=true --providers.docker
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   tc-server:
     image: ticket_checker_server
-    container_name: ticket_checker_server
     build: .
     restart: unless-stopped
-    ports:
-      - ${TC_HTTP_SERVER_HOST:-8080}:8080
     depends_on:
       - postgres
     links:
       - postgres
     environment:
-      TC_DB_URL: "${TC_DB_URL}"
-      TC_DB_USER: "${TC_DB_USER}"
-      TC_DB_PASS: "${TC_DB_PASS}"
-
-      TC_EMAIL_FROM: "${TC_EMAIL_FROM}"
-      TC_EMAIL_SMTP_USERNAME: "${TC_EMAIL_SMTP_USERNAME}"
-      TC_EMAIL_SMTP_PASSWORD: "${TC_EMAIL_SMTP_PASSWORD}"
-      TC_EMAIL_SMTP_HOST_NAME: "${TC_EMAIL_SMTP_HOST_NAME}"
-      TC_EMAIL_SMTP_PORT: "${TC_EMAIL_SMTP_PORT}"
-
-      TC_TIME_ZONE_ID: "Europe/Bucharest"
-
+      TC_DB_URL: "${TC_DB_URL:-jdbc:postgresql://postgres:5432/ticket_checker}"
+      TC_DB_USER: "${TC_DB_USER:-ticket-user}"
+      TC_DB_PASS: "${TC_DB_PASS:-ticket-password}"
       TC_JWT_EXPIRATION: "60 days"
-      TC_JWT_SECRET_KEY: "${TC_JWT_SECRET_KEY}"
+      TC_JWT_SECRET_KEY: "${TC_JWT_SECRET_KEY:-DO_NOT_COMMIT_THIS_KEY}"
+    labels:
+      - traefik.http.routers.tc-server.rule=Host(`tc.ro`)
+      - traefik.http.services.tc-server.loadbalancer.server.scheme=http
+      - traefik.http.services.tc-server.loadbalancer.server.port=8080
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          memory: "512M"
